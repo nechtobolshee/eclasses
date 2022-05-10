@@ -1,5 +1,6 @@
 from django.db import models
+from django.contrib.auth.models import AbstractUser
 
 
-class UserModel(models.Model):
-    col = models.CharField(max_length=15)
+class User(AbstractUser):
+    avatar = models.ImageField(default='default.jpg', upload_to='images/')

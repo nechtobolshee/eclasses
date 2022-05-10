@@ -9,15 +9,11 @@ services:
       - 8000:8000
     depends_on:
       - postgres
-    environment:
-      - USER_NAME=${POSTGRES_USER}
-      - PASSWORD=${POSTGRES_PASSWORD}
-      - HOST=${HOST}
+    env_file:
+      - .env
 
   postgres:
     image: postgres:12
-    env_file:
-      - .env
     environment:
       - HOST=${HOST}
       - POSTGRES_DB=${POSTGRES_DB}

@@ -2,6 +2,17 @@
 __pycache__/
 *.py[cod]
 *$py.class
+*.pyc
+
+idea/
+idea
+# idea files
+.idea
+.idea/
+workspace.xml
+
+# Ignore .jpg
+.jpg
 
 # C extensions
 *.so
@@ -127,3 +138,7 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# idea files
+.idea
+.idea/
