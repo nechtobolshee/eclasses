@@ -50,14 +50,13 @@ INSTALLED_APPS = [
     'users',
 ]
 
-SITE_ID = 1
-
-ACCOUNT_EMAIL_VERIFICATION = 'none'
-
-AUTH_USER_MODEL = 'users.User'
-
 REST_FRAMEWORK = {'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema'}
 
+SITE_ID = 1
+
+# Auth parameters
+AUTH_USER_MODEL = 'users.User'
+ACCOUNT_EMAIL_VERIFICATION = 'none'
 REST_AUTH_SERIALIZERS = {
     'USER_DETAILS_SERIALIZER': 'users.serializers.UserDetailsSerializer'
 }

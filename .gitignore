@@ -4,11 +4,11 @@ __pycache__/
 *$py.class
 *.pyc
 
-idea/
-idea
 # idea files
 .idea
 .idea/
+idea/
+idea
 workspace.xml
 
 # Ignore .jpg
@@ -139,6 +139,3 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-# idea files
-.idea
-.idea/

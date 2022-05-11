@@ -2,7 +2,7 @@ version: '3.7'
 services:
   django:
     build: .
-    command: bash -c "bash entrypoint.sh && python3 manage.py runserver 0.0.0.0:8000"
+    command: bash entrypoint.sh
     volumes:
       - .:/code
     ports:
