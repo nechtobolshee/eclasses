@@ -61,10 +61,6 @@ REST_AUTH_SERIALIZERS = {
     'USER_DETAILS_SERIALIZER': 'users.serializers.UserDetailsSerializer'
 }
 
-AUTH_USER_MODEL = 'users.User'
-
-SUPPORTED_SUBMIT_METHODS = ['get', 'post', 'put', 'delete']
-
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
