@@ -42,4 +42,9 @@ class Migration(migrations.Migration):
                 ('objects', django.contrib.auth.models.UserManager()),
             ],
         ),
+        migrations.AlterField(
+            model_name='user',
+            name='avatar',
+            field=models.ImageField(upload_to='images/'),
+        ),
     ]

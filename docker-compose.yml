@@ -2,7 +2,7 @@ version: '3.7'
 services:
   django:
     build: .
-    command: bash -c "bash entrypoint.sh && python3 manage.py runserver 0.0.0.0:8000"
+    command: bash entrypoint.sh
     volumes:
       - .:/code
     ports:
@@ -11,10 +11,6 @@ services:
       - postgres
     env_file:
       - .env
-    environment:
-      - USER_NAME=${POSTGRES_USER}
-      - PASSWORD=${POSTGRES_PASSWORD}
-      - HOST=${HOST}
 
   postgres:
     image: postgres:12
