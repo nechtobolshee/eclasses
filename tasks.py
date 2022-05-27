@@ -1,6 +1,7 @@
 from invoke import task
 import time
 import socket
+import os
 
 
 def wait_port_is_open(host, port):
@@ -17,7 +18,11 @@ def wait_port_is_open(host, port):
 
 @task
 def run_local(ctx):
-    wait_port_is_open('postgres', 5432)
+    host = os.getenv('POSTGRES_HOST')
+    port = int(os.getenv('POSTGRES_PORT'))
+
+    wait_port_is_open(host, port)
+
     ctx.run("./manage.py dbshell < drop_db.sql")
     ctx.run("./manage.py dbshell < db_dump.sql")
     ctx.run("./manage.py makemigrations")
