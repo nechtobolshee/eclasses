@@ -4,6 +4,10 @@ __pycache__/
 *$py.class
 *.pyc
 
+# Django static folder
+.static/
+static/
+
 # idea files
 .idea
 .idea/
