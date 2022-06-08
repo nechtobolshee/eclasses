@@ -1,6 +1,6 @@
 from django.shortcuts import render
 
-from .serializers import CurrentUserSerializer
+from .serializers import UserDetailsSerializer
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -14,5 +14,5 @@ class GetCurrentUser(APIView):
 	permission_classes = (IsAuthenticated,)
 
 	def get(self, request):
-		serializer = CurrentUserSerializer(request.user)
+		serializer = UserDetailsSerializer(request.user)
 		return Response(serializer.data)

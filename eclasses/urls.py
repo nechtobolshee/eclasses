@@ -23,4 +23,5 @@ urlpatterns = [
     path('rest-auth/', include('rest_auth.urls')),
     path('rest-auth/registration/', include('rest_auth.registration.urls')),
     path('docs/', get_swagger_view(title='EClasses Rest API Document')),
+    path('english/', include('english.urls')),
 ]
