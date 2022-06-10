@@ -23,4 +23,8 @@ class Migration(migrations.Migration):
                 ('teacher', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='teacher_classes', to=settings.AUTH_USER_MODEL)),
             ],
         ),
+        migrations.AlterModelOptions(
+            name='class',
+            options={'verbose_name_plural': 'Class'},
+        ),
     ]

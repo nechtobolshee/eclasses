@@ -17,8 +17,5 @@ class ClassSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         ret = super(ClassSerializer, self).to_representation(instance)
         ret["teacher"] = UserSerializer(instance.teacher).data
-        ret["students"] = []
-        for entry in instance.students.all():
-            student = UserSerializer(entry).data
-            ret["students"].append(student)
+        ret["students"] = [UserSerializer(entry).data for entry in instance.students.all()]
         return ret
