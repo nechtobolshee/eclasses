@@ -26,7 +26,7 @@ class ClassesListTest(APITestCase):
             ],
             "teacher": {"pk": 5, "first_name": "Damian", "last_name": "Ward"},
         }
-        url = reverse("classes-all")
+        url = reverse("classes-list")
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 3)
@@ -80,7 +80,7 @@ class ClassesListTest(APITestCase):
             ],
             "teacher": {"pk": 3, "first_name": "Ayden", "last_name": "Henris"},
         }
-        url = f'{reverse("classes-all")}?name=&teacher=3&students=5'
+        url = f'{reverse("classes-list")}?name=&teacher=3&students=5'
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 1)

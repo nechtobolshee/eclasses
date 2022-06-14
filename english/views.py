@@ -13,7 +13,7 @@ class ClassListAPIView(ListAPIView):
     filterset_fields = ['name', 'teacher', 'students']
 
 
-class CurrentClassesForStudentAPIView(ListAPIView):
+class CurrentClassesForStudentListAPIView(ListAPIView):
     queryset = Class.objects.all()
     serializer_class = ClassSerializer
     permission_classes = [IsAuthenticated]
@@ -22,7 +22,7 @@ class CurrentClassesForStudentAPIView(ListAPIView):
         return super().get_queryset().filter(students=self.request.user)
 
 
-class CurrentClassesForTeacherAPIView(ListAPIView):
+class CurrentClassesForTeacherListAPIView(ListAPIView):
     queryset = Class.objects.all()
     serializer_class = ClassSerializer
     permission_classes = [IsAuthenticated]
