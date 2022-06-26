@@ -1,7 +1,6 @@
 from django.contrib import admin
 
-import english.models
-from english.models import Class, Schedule
+from .models import Class, Schedule
 
 
 @admin.register(Class)
@@ -15,11 +14,14 @@ class AdminClass(admin.ModelAdmin):
 
 @admin.register(Schedule)
 class AdminSchedule(admin.ModelAdmin):
-    list_display = ("class_id", "full_selected_days_name", "start_time", "end_time")
+    list_display = ("class_name", "get_teacher_name", "full_name_selected_days", "start_time", "end_time")
 
     @admin.display(description="Days")
-    def full_selected_days_name(self, obj):
-        all_days = english.models.Schedule.week_days
-        selected_days = obj.days
-        fullname_days = [item[1] for item in all_days if item[0] in selected_days]
-        return fullname_days
+    def full_name_selected_days(self, obj):
+        full_name_days = [item[1] for item in Schedule.week_days if item[0] in obj.days]
+        return full_name_days
+
+    @admin.display(description="Teacher")
+    def get_teacher_name(self, obj):
+        teacher_name = obj.class_name.teacher
+        return teacher_name

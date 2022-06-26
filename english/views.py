@@ -1,6 +1,6 @@
 from rest_framework.generics import ListAPIView
 from .serializers import ClassSerializer
-from english.models import Class
+from .models import Class
 from rest_framework.permissions import IsAuthenticated
 from django_filters.rest_framework import DjangoFilterBackend
 
