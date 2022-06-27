@@ -18,10 +18,8 @@ class AdminSchedule(admin.ModelAdmin):
 
     @admin.display(description="Days")
     def full_name_selected_days(self, obj):
-        full_name_days = [item[1] for item in Schedule.week_days if item[0] in obj.days]
-        return full_name_days
+        return [item[1] for item in Schedule.week_days if item[0] in obj.days]
 
     @admin.display(description="Teacher")
     def get_teacher_name(self, obj):
-        teacher_name = obj.class_name.teacher
-        return teacher_name
+        return obj.class_name.teacher

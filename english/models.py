@@ -45,3 +45,6 @@ class Schedule(models.Model):
 
     class Meta:
         verbose_name_plural = "Schedule"
+
+    def __str__(self):
+        return self.class_name.name
