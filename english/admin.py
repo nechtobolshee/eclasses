@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Class, Schedule
+from .models import Class, Schedule, Lessons
 
 
 @admin.register(Class)
@@ -23,3 +23,12 @@ class AdminSchedule(admin.ModelAdmin):
     @admin.display(description="Teacher")
     def get_teacher_name(self, obj):
         return obj.class_name.teacher
+
+
+@admin.register(Lessons)
+class AdminLessons(admin.ModelAdmin):
+    list_display = ("class_name", "get_full_status", "time_start", "time_end")
+
+    @admin.display(description="Status")
+    def get_full_status(self, obj):
+        return [item[1] for item in Lessons.status_choice if item[0] in obj.status]

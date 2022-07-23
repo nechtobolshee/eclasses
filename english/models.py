@@ -2,11 +2,13 @@ from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from django.forms import MultipleChoiceField
 from django.utils.translation import gettext_lazy as _
+from django.core.exceptions import BadRequest
 from users.models import User
+from datetime import datetime
 
 
 class Class(models.Model):
-    name = models.CharField(max_length=150, db_index=True)
+    name = models.CharField(max_length=150, db_index=True, unique=True)
     students = models.ManyToManyField(User, related_name="student_classes")
     teacher = models.ForeignKey(User, on_delete=models.CASCADE, related_name="teacher_classes")
 
@@ -48,3 +50,71 @@ class Schedule(models.Model):
 
     def __str__(self):
         return self.class_name.name
+
+
+class Lessons(models.Model):
+    COMING_SOON = "COMING"
+    IN_PROGRESS = "PROGRESS"
+    DONE = "DONE"
+    CANCELED = "CANCELED"
+
+    status_choice = [
+        (COMING_SOON, _('Coming soon..')),
+        (IN_PROGRESS, _('In progress')),
+        (DONE, _('Done')),
+        (CANCELED, _('Canceled'))
+    ]
+
+    class_name = models.ForeignKey(Class, on_delete=models.CASCADE, verbose_name="class_name")
+    _status = models.CharField(max_length=15, choices=status_choice, default=COMING_SOON)
+    time_start = models.DateTimeField()
+    time_end = models.DateTimeField()
+
+    class Meta:
+        verbose_name_plural = "Lessons"
+
+    @property
+    def status(self):
+        return self._status
+
+    @status.setter
+    def status(self, value):
+        dispatcher = {
+            "COMING": self.set_status_coming,
+            "PROGRESS": self.set_status_progress,
+            "DONE": self.set_status_done,
+            "CANCELED": self.set_status_canceled
+        }
+        if value in dispatcher.keys():
+            dispatcher[value]()
+        self.save()
+
+    def set_status_coming(self):
+        if self.time_start > datetime.now():
+            self._status = Lessons.COMING_SOON
+        if self.time_end > datetime.now() > self.time_start:
+            raise BadRequest("Can't set this status, because this event is going now")
+        if self.time_end < datetime.now():
+            raise BadRequest("Can't set this status, because this event is already ended")
+
+    def set_status_progress(self):
+        if self.time_end > datetime.now() > self.time_start:
+            self._status = Lessons.IN_PROGRESS
+        if self.time_start > datetime.now():
+            raise BadRequest("Can't set this status, because this event is haven't started")
+        if self.time_end < datetime.now():
+            raise BadRequest("Can't set this status, because this event is already ended")
+
+    def set_status_done(self):
+        if self.time_end < datetime.now():
+            self._status = Lessons.DONE
+        if self.time_start > datetime.now():
+            raise BadRequest("Can't set this status, because this event is haven't started")
+        if self.time_end > datetime.now() > self.time_start:
+            raise BadRequest("Can't set this status, because this event is going now")
+
+    def set_status_canceled(self):
+        if self._status != Lessons.DONE or self.time_end < datetime.now():
+            self._status = Lessons.CANCELED
+        else:
+            raise BadRequest("Can't set this status, because this event is already ended")
