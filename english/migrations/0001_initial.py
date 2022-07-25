@@ -18,7 +18,7 @@ class Migration(migrations.Migration):
             name='Class',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(db_index=True, max_length=150, unique=True)),
+                ('name', models.CharField(db_index=True, max_length=150)),
                 ('students', models.ManyToManyField(related_name='student_classes', to=settings.AUTH_USER_MODEL)),
                 ('teacher', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='teacher_classes', to=settings.AUTH_USER_MODEL)),
             ],

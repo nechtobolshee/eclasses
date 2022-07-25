@@ -25,9 +25,3 @@ class LessonsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Lessons
         fields = ("pk", "class_name", "_status", "time_start", "time_end")
-
-    def to_representation(self, instance):
-        ret = super(LessonsSerializer, self).to_representation(instance)
-        ret["_status"] = [item[1] for item in Lessons.status_choice if item[0] in instance._status][0]
-        return ret
-    

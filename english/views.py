@@ -39,7 +39,7 @@ class CurrentLessonsForStudentListAPIView(ListAPIView):
     filterset_fields = ['class_name']
 
     def get_queryset(self):
-        return super().get_queryset().filter(class_name__students=self.request.user.pk, _status__in=[Lessons.COMING_SOON, Lessons.IN_PROGRESS]).order_by('-_status', 'time_start')
+        return super().get_queryset().filter(class_name__students=self.request.user.pk, _status__in=[Lessons.COMING_SOON, Lessons.IN_PROGRESS])
 
 
 class CurrentLessonsForTeacherListAPIView(ListAPIView):
@@ -50,4 +50,4 @@ class CurrentLessonsForTeacherListAPIView(ListAPIView):
     filterset_fields = ['class_name']
 
     def get_queryset(self):
-        return super().get_queryset().filter(class_name__teacher=self.request.user.pk, _status__in=[Lessons.COMING_SOON, Lessons.IN_PROGRESS]).order_by('-_status', 'time_start')
+        return super().get_queryset().filter(class_name__teacher=self.request.user.pk, _status__in=[Lessons.COMING_SOON, Lessons.IN_PROGRESS])

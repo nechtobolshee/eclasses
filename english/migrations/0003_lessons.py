@@ -21,7 +21,12 @@ class Migration(migrations.Migration):
                 ('class_name', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='english.class', verbose_name='class_name')),
             ],
             options={
-                'verbose_name_plural': 'Lessons',
+                'ordering': ['time_start'], 'verbose_name_plural': 'Lessons'
             },
+        ),
+        migrations.AlterField(
+            model_name='class',
+            name='name',
+            field=models.CharField(db_index=True, max_length=150, unique=True),
         ),
     ]
