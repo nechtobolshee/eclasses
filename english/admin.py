@@ -1,4 +1,4 @@
-from django.contrib import admin
+from django.contrib import admin, messages
 
 from .models import Class, Schedule, Lessons
 
@@ -27,7 +27,15 @@ class AdminSchedule(admin.ModelAdmin):
 
 @admin.register(Lessons)
 class AdminLessons(admin.ModelAdmin):
-    list_display = ("class_name", "get_full_status", "time_start", "time_end")
+    list_display = ("class_name", "status", "time_start", "time_end")
+
+    def save_model(self, request, obj, form, change):
+        try:
+            if "_status" in form.changed_data and "_status":
+                obj.status = obj._status
+            obj.save()
+        except BaseException as e:
+            messages.add_message(request, messages.ERROR, e)
 
     @admin.display(description="Status")
     def get_full_status(self, obj):

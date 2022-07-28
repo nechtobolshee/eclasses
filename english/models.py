@@ -100,35 +100,32 @@ class Lessons(models.Model):
         if self.time_start > datetime.now():
             self._status = Lessons.COMING_SOON
         elif self.time_end > datetime.now() >= self.time_start:
-            logger.warning(f"Tried to set {Lessons.COMING_SOON} status for {self.pk} lesson (event is going now)")
-            raise BadRequest("Can't set this status, because this event is going now")
+            self.error_message(failed_status=Lessons.COMING_SOON, reason="going now")
         elif self.time_end <= datetime.now():
-            logger.warning(f"Tried to set {Lessons.COMING_SOON} status for {self.pk} lesson (event is already ended)")
-            raise BadRequest("Can't set this status, because this event is already ended")
+            self.error_message(failed_status=Lessons.COMING_SOON, reason="already ended")
 
     def set_status_progress(self):
         if self.time_end > datetime.now() >= self.time_start:
             self._status = Lessons.IN_PROGRESS
         elif self.time_start > datetime.now():
-            logger.warning(f"Tried to set {Lessons.IN_PROGRESS} status for {self.pk} lesson (event is haven't started)")
-            raise BadRequest("Can't set this status, because this event is haven't started")
+            self.error_message(failed_status=Lessons.IN_PROGRESS, reason="haven't started")
         elif self.time_end <= datetime.now():
-            logger.warning(f"Tried to set {Lessons.IN_PROGRESS} status for {self.pk} lesson (event is already ended)")
-            raise BadRequest("Can't set this status, because this event is already ended")
+            self.error_message(failed_status=Lessons.IN_PROGRESS, reason="already ended")
 
     def set_status_done(self):
         if self.time_end <= datetime.now():
             self._status = Lessons.DONE
         elif self.time_start > datetime.now():
-            logger.warning(f"Tried to set {Lessons.DONE} status for {self.pk} lesson (event is haven't started)")
-            raise BadRequest("Can't set this status, because this event is haven't started")
+            self.error_message(failed_status=Lessons.DONE, reason="haven't started")
         elif self.time_end > datetime.now() >= self.time_start:
-            logger.warning(f"Tried to set {Lessons.DONE} status for {self.pk} lesson (event is going now)")
-            raise BadRequest("Can't set this status, because this event is going now")
+            self.error_message(failed_status=Lessons.DONE, reason="going now")
 
     def set_status_canceled(self):
         if self._status != Lessons.DONE or self.time_end <= datetime.now():
             self._status = Lessons.CANCELED
         else:
-            logger.warning(f"Tried to set {Lessons.CANCELED} status for {self.pk} lesson (event is already ended)")
-            raise BadRequest("Can't set this status, because this event is already ended")
+            self.error_message(failed_status=Lessons.CANCELED, reason="already ended")
+
+    def error_message(self, failed_status, reason):
+        logger.warning(f"Tried to set {failed_status} status for {self.pk} lesson (event is {reason})")
+        raise BadRequest(f"Can't set this {failed_status}, because this event is {reason}")

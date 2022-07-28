@@ -44,7 +44,7 @@ class ClassesListTest(APITestCase):
             ],
             "teacher": {"pk": 5, "first_name": "Damian", "last_name": "Ward"},
         }
-        url = reverse("student-my")
+        url = reverse("student-classes")
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 2)
@@ -62,7 +62,7 @@ class ClassesListTest(APITestCase):
             ],
             "teacher": {"pk": 1, "first_name": "Maksim", "last_name": "Lukash"},
         }
-        url = reverse("teacher-my")
+        url = reverse("teacher-classes")
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 1)
@@ -81,6 +81,44 @@ class ClassesListTest(APITestCase):
             "teacher": {"pk": 3, "first_name": "Ayden", "last_name": "Henris"},
         }
         url = f'{reverse("classes-list")}?name=&teacher=3&students=5'
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 1)
+        self.assertDictEqual(dict(response.data[0]), expected_data)
+
+
+class LessonsListTest(APITestCase):
+    fixtures = [
+        "english/tests/fixtures.json",
+    ]
+
+    def setUp(self):
+        self.testUser = User.objects.get(id=1)
+        self.client.force_login(user=self.testUser)
+
+    def test_get_lessons_for_current_student(self):
+        expected_data = {
+            "pk": 1,
+            "class_name": 1,
+            "_status": "PROGRESS",
+            "time_start": "2022-07-04T01:14:43",
+            "time_end": "2022-07-30T01:14:46"
+        }
+        url = reverse("student-lessons")
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 1)
+        self.assertDictEqual(dict(response.data[0]), expected_data)
+
+    def test_get_lessons_for_current_teacher(self):
+        expected_data = {
+            "pk": 2,
+            "class_name": 2,
+            "_status": "PROGRESS",
+            "time_start": "2022-07-04T01:14:43",
+            "time_end": "2022-07-30T01:14:46"
+        }
+        url = reverse("teacher-lessons")
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 1)
