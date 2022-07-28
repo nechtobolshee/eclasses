@@ -110,5 +110,25 @@
             "teacher": "3",
             "students": ["1", "2", "4", "5"]
         }
+    },
+    {
+        "model": "english.Lessons",
+        "pk": "1",
+        "fields": {
+            "class_name": "1",
+            "_status": "PROGRESS",
+            "time_start": "2022-07-04T01:14:43",
+            "time_end": "2022-07-30T01:14:46"
+        }
+    },
+    {
+        "model": "english.Lessons",
+        "pk": "2",
+        "fields": {
+            "class_name": "2",
+            "_status": "PROGRESS",
+            "time_start": "2022-07-04T01:14:43",
+            "time_end": "2022-07-30T01:14:46"
+        }
     }
 ]

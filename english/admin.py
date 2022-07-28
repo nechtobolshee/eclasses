@@ -1,6 +1,6 @@
-from django.contrib import admin
+from django.contrib import admin, messages
 
-from .models import Class, Schedule
+from .models import Class, Schedule, Lessons
 
 
 @admin.register(Class)
@@ -23,3 +23,16 @@ class AdminSchedule(admin.ModelAdmin):
     @admin.display(description="Teacher")
     def get_teacher_name(self, obj):
         return obj.class_name.teacher
+
+
+@admin.register(Lessons)
+class AdminLessons(admin.ModelAdmin):
+    list_display = ("class_name", "status", "time_start", "time_end")
+
+    def save_model(self, request, obj, form, change):
+        try:
+            if "_status" in form.changed_data:
+                obj.status = obj._status
+            obj.save()
+        except BaseException as e:
+            messages.add_message(request, messages.ERROR, e)

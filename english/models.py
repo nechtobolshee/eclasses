@@ -2,11 +2,16 @@ from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from django.forms import MultipleChoiceField
 from django.utils.translation import gettext_lazy as _
+from django.core.exceptions import BadRequest, ValidationError
 from users.models import User
+from datetime import datetime
+import logging
+
+logger = logging.getLogger('django')
 
 
 class Class(models.Model):
-    name = models.CharField(max_length=150, db_index=True)
+    name = models.CharField(max_length=150, db_index=True, unique=True)
     students = models.ManyToManyField(User, related_name="student_classes")
     teacher = models.ForeignKey(User, on_delete=models.CASCADE, related_name="teacher_classes")
 
@@ -48,3 +53,79 @@ class Schedule(models.Model):
 
     def __str__(self):
         return self.class_name.name
+
+
+class Lessons(models.Model):
+    COMING_SOON = "COMING"
+    IN_PROGRESS = "PROGRESS"
+    DONE = "DONE"
+    CANCELED = "CANCELED"
+
+    status_choice = [
+        (COMING_SOON, _("Coming soon..")),
+        (IN_PROGRESS, _("In progress")),
+        (DONE, _("Done")),
+        (CANCELED, _("Canceled"))
+    ]
+
+    class_name = models.ForeignKey(Class, on_delete=models.CASCADE, verbose_name="class_name")
+    _status = models.CharField(max_length=15, choices=status_choice, default=COMING_SOON)
+    time_start = models.DateTimeField()
+    time_end = models.DateTimeField()
+
+    class Meta:
+        verbose_name_plural = "Lessons"
+        ordering = ['time_start']
+
+    @property
+    def status(self):
+        return self._status
+
+    @status.setter
+    def status(self, value):
+        dispatcher = {
+            self.COMING_SOON: self.set_status_coming,
+            self.IN_PROGRESS: self.set_status_progress,
+            self.DONE: self.set_status_done,
+            self.CANCELED: self.set_status_canceled
+        }
+        if value in dispatcher.keys():
+            dispatcher[value]()
+            self.save()
+        else:
+            logger.warning(f"Tried to set not allowed status for {self.pk} lesson (status: {value})")
+            raise ValidationError("Wrong status.. Please, set allowed status")
+
+    def set_status_coming(self):
+        if self.time_start > datetime.now():
+            self._status = Lessons.COMING_SOON
+        elif self.time_end > datetime.now() >= self.time_start:
+            self.error_message(failed_status=Lessons.COMING_SOON, reason="going now")
+        elif self.time_end <= datetime.now():
+            self.error_message(failed_status=Lessons.COMING_SOON, reason="already ended")
+
+    def set_status_progress(self):
+        if self.time_end > datetime.now() >= self.time_start:
+            self._status = Lessons.IN_PROGRESS
+        elif self.time_start > datetime.now():
+            self.error_message(failed_status=Lessons.IN_PROGRESS, reason="haven't started")
+        elif self.time_end <= datetime.now():
+            self.error_message(failed_status=Lessons.IN_PROGRESS, reason="already ended")
+
+    def set_status_done(self):
+        if self.time_end <= datetime.now():
+            self._status = Lessons.DONE
+        elif self.time_start > datetime.now():
+            self.error_message(failed_status=Lessons.DONE, reason="haven't started")
+        elif self.time_end > datetime.now() >= self.time_start:
+            self.error_message(failed_status=Lessons.DONE, reason="going now")
+
+    def set_status_canceled(self):
+        if self._status != Lessons.DONE or self.time_end <= datetime.now():
+            self._status = Lessons.CANCELED
+        else:
+            self.error_message(failed_status=Lessons.CANCELED, reason="already ended")
+
+    def error_message(self, failed_status, reason):
+        logger.warning(f"Tried to set {failed_status} status for {self.pk} lesson (event is {reason})")
+        raise BadRequest(f"Can't set this {failed_status}, because this event is {reason}")
