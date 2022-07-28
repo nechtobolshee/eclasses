@@ -36,7 +36,3 @@ class AdminLessons(admin.ModelAdmin):
             obj.save()
         except BaseException as e:
             messages.add_message(request, messages.ERROR, e)
-
-    @admin.display(description="Status")
-    def get_full_status(self, obj):
-        return [item[1] for item in Lessons.status_choice if item[0] in obj.status]
