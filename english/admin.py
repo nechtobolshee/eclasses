@@ -31,7 +31,7 @@ class AdminLessons(admin.ModelAdmin):
 
     def save_model(self, request, obj, form, change):
         try:
-            if "_status" in form.changed_data and "_status":
+            if "_status" in form.changed_data:
                 obj.status = obj._status
             obj.save()
         except BaseException as e:
