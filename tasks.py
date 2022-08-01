@@ -1,5 +1,6 @@
 from invoke import task
 import time
+import threading
 import socket
 import os
 
@@ -17,9 +18,14 @@ def wait_port_is_open(host, port):
 
 
 @task
+def cron(ctx):
+    ctx.run(f"python manage.py cronloop -s 60")
+
+
+@task
 def run_local(ctx):
-    host = os.getenv('POSTGRES_HOST')
-    port = int(os.getenv('POSTGRES_PORT'))
+    host = os.getenv("POSTGRES_HOST")
+    port = int(os.getenv("POSTGRES_PORT"))
 
     wait_port_is_open(host, port)
 
@@ -27,5 +33,9 @@ def run_local(ctx):
     ctx.run("./manage.py dbshell < db_dump.sql")
     ctx.run("./manage.py makemigrations")
     ctx.run("./manage.py migrate")
-    ctx.run('./manage.py collectstatic --noinput')
+
+    thread_cron = threading.Thread(target=cron, args=(ctx,))
+    thread_cron.start()
+
+    ctx.run("./manage.py collectstatic --noinput")
     ctx.run("./manage.py runserver 0.0.0.0:8000")
