@@ -19,7 +19,8 @@ def wait_port_is_open(host, port):
 
 @task
 def cron(ctx):
-    ctx.run(f"python manage.py cronloop -s 60")
+    ctx.run("python manage.py crontab add")
+    ctx.run("service cron start")
 
 
 @task

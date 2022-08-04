@@ -42,7 +42,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.sites',
     'django_filters',
-    'django_cron',
+    'django_crontab',
     'rest_auth',
     'rest_auth.registration',
     'rest_framework',
@@ -161,8 +161,8 @@ LOGGING = {
     },
 }
 
-CRON_CLASSES = [
-    'english.cron.ChangeLessonsStatusJob',
+CRONJOBS = [
+    ('*/30 * * * * export $(xargs -0 -a "/proc/1/environ") &&', 'english.cron.ChangeLessonsStatusJob', '>> /code/cronjob.log 2>&1')
 ]
 
 # Internationalization
