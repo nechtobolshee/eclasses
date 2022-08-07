@@ -5,7 +5,9 @@ import socket
 import os
 
 
-def wait_port_is_open(host, port):
+def wait_port_is_open():
+    host = os.getenv("POSTGRES_HOST")
+    port = int(os.getenv("POSTGRES_PORT"))
     while True:
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         result = sock.connect_ex((host, port))
@@ -17,6 +19,13 @@ def wait_port_is_open(host, port):
         print("Retrying connect to BD!")
 
 
+def setup_database(ctx):
+    ctx.run("./manage.py dbshell < drop_db.sql")
+    ctx.run("./manage.py dbshell < db_dump.sql")
+    ctx.run("./manage.py makemigrations")
+    ctx.run("./manage.py migrate")
+
+
 @task
 def cron(ctx):
     ctx.run("python manage.py crontab add")
@@ -25,15 +34,8 @@ def cron(ctx):
 
 @task
 def run_local(ctx):
-    host = os.getenv("POSTGRES_HOST")
-    port = int(os.getenv("POSTGRES_PORT"))
-
-    wait_port_is_open(host, port)
-
-    ctx.run("./manage.py dbshell < drop_db.sql")
-    ctx.run("./manage.py dbshell < db_dump.sql")
-    ctx.run("./manage.py makemigrations")
-    ctx.run("./manage.py migrate")
+    wait_port_is_open()
+    setup_database(ctx)
 
     thread_cron = threading.Thread(target=cron, args=(ctx,))
     thread_cron.start()

@@ -3,8 +3,6 @@ from .models import Lessons
 
 
 class ChangeLessonsStatusJob:
-    print(f"{datetime.now()} | Running cronjob 'ChangeLessonsStatusJob'")
-
     Lessons.objects.exclude(_status__in=[Lessons.CANCELED, Lessons.COMING_SOON]).filter(
         time_start__gt=datetime.now()
     ).update(_status=Lessons.COMING_SOON)
