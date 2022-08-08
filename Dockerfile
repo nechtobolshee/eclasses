@@ -10,6 +10,8 @@ RUN apt-get update && apt-get upgrade -y\
     && apt-get install -y git gcc libspatialindex-dev python3-dev cmake curl libcurl4-openssl-dev python3-setuptools \
     postgresql-client-13
 
+RUN apt-get install -y cron
+
 RUN mkdir /code
 WORKDIR /code
 

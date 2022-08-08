@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.sites',
     'django_filters',
+    'django_crontab',
     'rest_auth',
     'rest_auth.registration',
     'rest_framework',
@@ -160,12 +161,16 @@ LOGGING = {
     },
 }
 
+CRONJOBS = [
+    ('*/30 * * * * export $(xargs -0 -a "/proc/1/environ") &&', 'english.cron.ChangeLessonsStatusJob', '>> /code/cronjob.log 2>&1')
+]
+
 # Internationalization
 # https://docs.djangoproject.com/en/4.0/topics/i18n/
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'Europe/Kiev'
+TIME_ZONE = 'UTC'
 
 USE_I18N = True
 
