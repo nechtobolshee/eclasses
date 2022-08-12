@@ -1,5 +1,8 @@
 from datetime import datetime
-from .models import Lessons
+from .models import Class, Lessons
+import logging
+
+logger = logging.getLogger('django')
 
 
 class ChangeLessonsStatusJob:
@@ -14,3 +17,11 @@ class ChangeLessonsStatusJob:
     Lessons.objects.exclude(_status__in=[Lessons.CANCELED, Lessons.DONE]).filter(
         time_end__lte=datetime.now()
     ).update(_status=Lessons.DONE)
+
+
+class CreateLessonsJob:
+    for item in Class.objects.all():
+        try:
+            item.create_lessons()
+        except Exception as e:
+            pass

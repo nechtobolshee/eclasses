@@ -4,7 +4,9 @@ from django.forms import MultipleChoiceField
 from django.utils.translation import gettext_lazy as _
 from django.core.exceptions import BadRequest, ValidationError
 from users.models import User
-from datetime import datetime
+from datetime import datetime, timedelta
+import six
+import json
 import logging
 
 logger = logging.getLogger('django')
@@ -21,6 +23,28 @@ class Class(models.Model):
     def __str__(self):
         return self.name
 
+    def create_lessons(self):
+        selected_schedule = self.schedule
+        last_lesson = self.lessons.filter(class_name=selected_schedule.class_name).order_by("-time_end").first()
+        date_from = last_lesson.time_end if last_lesson else datetime.now()
+        date_end = datetime.now() + timedelta(weeks=4)
+        if date_end.date() <= date_from.date():
+            return
+
+        lessons_to_create = list()
+        scheduled_days = selected_schedule.days
+        for day in range(1, (date_end - date_from).days + 1):
+            date = date_from + timedelta(days=day)
+            if date.weekday() in scheduled_days:
+                lessons_to_create.append(Lessons(
+                    class_name=self,
+                    time_start=datetime.combine(date=date, time=selected_schedule.start_time),
+                    time_end=datetime.combine(date=date, time=selected_schedule.end_time),
+                ))
+        if len(lessons_to_create) > 0:
+            logger.info(f"Created {len(lessons_to_create)} lessons for {self} class.")
+        return Lessons.objects.bulk_create(lessons_to_create)
+
 
 class ChoiceArrayField(ArrayField):
     def formfield(self, **kwargs):
@@ -31,27 +55,34 @@ class ChoiceArrayField(ArrayField):
         defaults.update(kwargs)
         return super(ArrayField, self).formfield(**defaults)
 
+    def to_python(self, value):
+        if isinstance(value, six.string_types):
+            value = [self.base_field.to_python(val) for val in json.loads(value)]
+        elif isinstance(value, list):
+            value = [self.base_field.to_python(val) for val in value]
+        return value
+
 
 class Schedule(models.Model):
     week_days = [
-        ("1", _("Monday")),
-        ("2", _("Tuesday")),
-        ("3", _("Wednesday")),
-        ("4", _("Thursday")),
-        ("5", _("Friday")),
-        ("6", _("Saturday")),
-        ("7", _("Sunday")),
+        (0, _("Monday")),
+        (1, _("Tuesday")),
+        (2, _("Wednesday")),
+        (3, _("Thursday")),
+        (4, _("Friday")),
+        (5, _("Saturday")),
+        (6, _("Sunday")),
     ]
 
-    class_name = models.ForeignKey(Class, on_delete=models.CASCADE, verbose_name="Class name", related_name="class_name")
-    days = ChoiceArrayField(base_field=models.CharField(max_length=10, choices=week_days), default=list, size=5, blank=True)
-    start_time = models.DateTimeField()
-    end_time = models.DateTimeField()
+    class_name = models.OneToOneField(Class, on_delete=models.CASCADE, verbose_name="Class name", related_name="schedule")
+    days = ChoiceArrayField(base_field=models.IntegerField(choices=week_days), default=list, size=5, blank=True)
+    start_time = models.TimeField(auto_now=False, auto_now_add=False)
+    end_time = models.TimeField(auto_now=False, auto_now_add=False)
 
     class Meta:
         verbose_name_plural = "Schedule"
 
-    def __str__(self):
+    def str(self):
         return self.class_name.name
 
 
@@ -68,7 +99,7 @@ class Lessons(models.Model):
         (CANCELED, _("Canceled"))
     ]
 
-    class_name = models.ForeignKey(Class, on_delete=models.CASCADE, verbose_name="class_name")
+    class_name = models.ForeignKey(Class, on_delete=models.CASCADE, verbose_name="class_name", related_name="lessons")
     _status = models.CharField(max_length=15, choices=status_choice, default=COMING_SOON)
     time_start = models.DateTimeField()
     time_end = models.DateTimeField()
