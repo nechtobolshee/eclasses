@@ -162,7 +162,8 @@ LOGGING = {
 }
 
 CRONJOBS = [
-    ('*/30 * * * * export $(xargs -0 -a "/proc/1/environ") &&', 'english.cron.ChangeLessonsStatusJob', '>> /code/cronjob.log 2>&1')
+    ('*/30 * * * * export $(xargs -0 -a "/proc/1/environ") &&', 'english.cron.ChangeLessonsStatusJob', '>> /code/cronjob.log 2>&1'),
+    ('* * * * 0 export $(xargs -0 -a "/proc/1/environ") &&', 'english.cron.CreateLessonsJob', '>> /code/cronjob.log 2>&1')
 ]
 
 # Internationalization
