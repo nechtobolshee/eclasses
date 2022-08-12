@@ -43,7 +43,7 @@ class Class(models.Model):
                 ))
         if len(lessons_to_create) > 0:
             logger.info(f"Created {len(lessons_to_create)} lessons for {self} class.")
-        return Lessons.objects.bulk_create(lessons_to_create)
+            return Lessons.objects.bulk_create(lessons_to_create)
 
 
 class ChoiceArrayField(ArrayField):
@@ -82,7 +82,7 @@ class Schedule(models.Model):
     class Meta:
         verbose_name_plural = "Schedule"
 
-    def str(self):
+    def __str__(self):
         return self.class_name.name
 
 

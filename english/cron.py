@@ -20,8 +20,8 @@ class ChangeLessonsStatusJob:
 
 
 class CreateLessonsJob:
-    for item in Class.objects.all():
+    for selected_class in Class.objects.all():
         try:
-            item.create_lessons()
-        except Exception as e:
-            pass
+            selected_class.create_lessons()
+        except:
+            logger.warning(f"Failed to create lessons for {selected_class} class.")
