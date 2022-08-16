@@ -18,7 +18,7 @@ class User(AbstractUser):
     ]
 
     avatar = models.ImageField(upload_to='images/', blank=True)
-    _role = models.CharField(max_length=250, null=False, choices=user_roles, default=EMPLOYEE)
+    _role = models.CharField(max_length=10, null=False, choices=user_roles, default=EMPLOYEE)
 
     def __str__(self):
         return self.get_full_name()
@@ -35,5 +35,5 @@ class User(AbstractUser):
         else:
             self.is_staff = False
             self.is_superuser = False
-        logger.info(f"Changed user role for {self.get_full_name()} to '{value}'")
+        logger.info(f"Changed role for {self.get_full_name()} (id: {self.pk}) to '{value}'")
         self.save()

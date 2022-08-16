@@ -15,4 +15,10 @@ class Migration(migrations.Migration):
             name='_role',
             field=models.CharField(choices=[('EMPLOYEE', 'Employee'), ('TEACHER', 'Teacher'), ('HR', 'HR')], default='EMPLOYEE', max_length=250),
         ),
+        migrations.AlterField(
+            model_name='user',
+            name='_role',
+            field=models.CharField(choices=[('EMPLOYEE', 'Employee'), ('TEACHER', 'Teacher'), ('HR', 'HR')],
+                                   default='EMPLOYEE', max_length=10),
+        ),
     ]
