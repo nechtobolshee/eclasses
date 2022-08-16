@@ -21,7 +21,7 @@ class UserAdmin(BaseUserAdmin):
         (None, {"fields": ("username", "password")}),
         (
             _("Personal info"),
-            {"fields": ("first_name", "last_name", "email", "avatar")},
+            {"fields": ("first_name", "last_name", "email", "avatar", "_role")},
         ),
         (
             _("Permissions"),
@@ -30,8 +30,6 @@ class UserAdmin(BaseUserAdmin):
                     "is_active",
                     "is_staff",
                     "is_superuser",
-                    "groups",
-                    "user_permissions",
                 ),
             },
         ),
@@ -46,3 +44,8 @@ class UserAdmin(BaseUserAdmin):
             },
         ),
     )
+
+    def save_model(self, request, obj, form, change):
+        if "_role" in form.changed_data:
+            obj.role = obj._role
+        obj.save()
