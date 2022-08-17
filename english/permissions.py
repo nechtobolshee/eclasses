@@ -11,8 +11,7 @@ class IsEmployee(BasePermission):
         )
 
     def has_object_permission(self, request, view, obj):
-        is_employee = self.has_permission(request, view)
-        return bool(is_employee and request.user in obj.students)
+        return bool(request.user in obj.students)
 
 
 class IsTeacher(BasePermission):
@@ -24,5 +23,4 @@ class IsTeacher(BasePermission):
         )
 
     def has_object_permission(self, request, view, obj):
-        is_teacher = self.has_permission(request, view)
-        return bool(is_teacher and obj.teacher == request.user)
+        return bool(obj.teacher == request.user)

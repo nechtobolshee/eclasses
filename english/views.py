@@ -17,7 +17,7 @@ class ClassListAPIView(ListAPIView):
 class CurrentClassesForStudentListAPIView(ListAPIView):
     queryset = Class.objects.all()
     serializer_class = ClassSerializer
-    permission_classes = [IsEmployee]
+    permission_classes = [IsAuthenticated, IsEmployee]
 
     def get_queryset(self):
         return super().get_queryset().filter(students=self.request.user)
@@ -26,7 +26,7 @@ class CurrentClassesForStudentListAPIView(ListAPIView):
 class CurrentClassesForTeacherListAPIView(ListAPIView):
     queryset = Class.objects.all()
     serializer_class = ClassSerializer
-    permission_classes = [IsTeacher]
+    permission_classes = [IsAuthenticated, IsTeacher]
 
     def get_queryset(self):
         return super().get_queryset().filter(teacher=self.request.user)
@@ -35,7 +35,7 @@ class CurrentClassesForTeacherListAPIView(ListAPIView):
 class CurrentLessonsForStudentListAPIView(ListAPIView):
     queryset = Lessons.objects.all()
     serializer_class = LessonsSerializer
-    permission_classes = [IsEmployee]
+    permission_classes = [IsAuthenticated, IsEmployee]
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['class_name']
 
@@ -46,7 +46,7 @@ class CurrentLessonsForStudentListAPIView(ListAPIView):
 class CurrentLessonsForTeacherListAPIView(ListAPIView):
     queryset = Lessons.objects.all()
     serializer_class = LessonsSerializer
-    permission_classes = [IsTeacher]
+    permission_classes = [IsAuthenticated, IsTeacher]
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['class_name']
 
