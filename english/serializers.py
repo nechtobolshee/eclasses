@@ -14,6 +14,7 @@ class ClassSerializer(serializers.ModelSerializer):
     class Meta:
         model = Class
         fields = ("pk", "name", "students", "teacher")
+        read_only_fields = ("teacher",)
 
     def to_representation(self, instance):
         ret = super(ClassSerializer, self).to_representation(instance)
@@ -54,25 +55,9 @@ class CreateClassSerializer(ClassSerializer):
         return ret
 
 
-class DeleteClassSerializer(ClassSerializer):
-    class Meta(ClassSerializer.Meta):
-        fields = ("pk", "name", "students", "teacher")
-
-    def to_representation(self, instance):
-        ret = super(DeleteClassSerializer, self).to_representation(instance)
-        ret["students"] = [UserSerializer(entry).data for entry in instance.students.all()]
-        ret["teacher"] = UserSerializer(instance.teacher).data
-        return ret
-
-
 class LessonsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Lessons
-        fields = ("pk", "class_name", "_status", "time_start", "time_end")
-
-
-class UpdateLessonSerializer(LessonsSerializer):
-    class Meta(LessonsSerializer.Meta):
         fields = ("pk", "class_name", "_status", "time_start", "time_end")
         read_only_fields = ("pk", "class_name", "_status",)
 

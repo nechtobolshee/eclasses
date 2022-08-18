@@ -8,15 +8,13 @@ from rest_framework import status
 from rest_framework.generics import (
     ListAPIView,
     CreateAPIView,
-    RetrieveDestroyAPIView,
+    RetrieveUpdateDestroyAPIView,
     RetrieveUpdateAPIView
 )
 from .serializers import (
     ClassSerializer,
     LessonsSerializer,
     CreateClassSerializer,
-    DeleteClassSerializer,
-    UpdateLessonSerializer
 )
 
 
@@ -57,22 +55,13 @@ class ClassesAndScheduleCreateAPIView(CreateAPIView):
         return Response(status=status.HTTP_201_CREATED)
 
 
-class ClassesScheduleLessonsRetrieveDestroyAPIView(RetrieveDestroyAPIView):
+class ClassesScheduleLessonsRetrieveDestroyAPIView(RetrieveUpdateDestroyAPIView):
     queryset = Class.objects.all()
-    serializer_class = DeleteClassSerializer
+    serializer_class = ClassSerializer
     permission_classes = [IsAuthenticated, IsTeacher]
 
     def get_queryset(self):
         return super().get_queryset().filter(teacher=self.request.user)
-
-    def destroy(self, request, *args, **kwargs):
-        class_instance = self.get_object()
-        schedule_instance = Schedule.objects.all().filter(class_name=class_instance.pk)
-        lessons_instance = Lessons.objects.all().filter(class_name=class_instance.pk)
-        self.perform_destroy(class_instance)
-        self.perform_destroy(schedule_instance)
-        self.perform_destroy(lessons_instance)
-        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class CurrentLessonsForStudentListAPIView(ListAPIView):
@@ -97,9 +86,9 @@ class CurrentLessonsForTeacherListAPIView(ListAPIView):
         return super().get_queryset().filter(class_name__teacher=self.request.user.pk, _status__in=[Lessons.COMING_SOON, Lessons.IN_PROGRESS])
 
 
-class UpdateLessonsForTeacherRetrieveUpdateAPIView(RetrieveUpdateAPIView):
+class UpdateLessonsRetrieveUpdateAPIView(RetrieveUpdateAPIView):
     queryset = Lessons.objects.all()
-    serializer_class = UpdateLessonSerializer
+    serializer_class = LessonsSerializer
     permission_classes = [IsAuthenticated, IsTeacher]
 
     def get_queryset(self):
