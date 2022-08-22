@@ -12,40 +12,6 @@ import logging
 logger = logging.getLogger('django')
 
 
-class Class(models.Model):
-    name = models.CharField(max_length=150, db_index=True, unique=True)
-    students = models.ManyToManyField(User, related_name="student_classes")
-    teacher = models.ForeignKey(User, on_delete=models.CASCADE, related_name="teacher_classes")
-
-    class Meta:
-        verbose_name_plural = "Class"
-
-    def __str__(self):
-        return self.name
-
-    def create_lessons(self):
-        selected_schedule = self.schedule
-        last_lesson = self.lessons.filter(class_name=selected_schedule.class_name).order_by("-time_end").first()
-        date_from = last_lesson.time_end if last_lesson else datetime.now()
-        date_end = datetime.now() + timedelta(weeks=4)
-        if date_end.date() <= date_from.date():
-            return
-
-        lessons_to_create = list()
-        scheduled_days = selected_schedule.days
-        for day in range(1, (date_end - date_from).days + 1):
-            date = date_from + timedelta(days=day)
-            if date.weekday() in scheduled_days:
-                lessons_to_create.append(Lessons(
-                    class_name=self,
-                    time_start=datetime.combine(date=date, time=selected_schedule.start_time),
-                    time_end=datetime.combine(date=date, time=selected_schedule.end_time),
-                ))
-        if len(lessons_to_create) > 0:
-            logger.info(f"Created {len(lessons_to_create)} lessons for {self} class.")
-            return Lessons.objects.bulk_create(lessons_to_create)
-
-
 class ChoiceArrayField(ArrayField):
     def formfield(self, **kwargs):
         defaults = {
@@ -63,7 +29,7 @@ class ChoiceArrayField(ArrayField):
         return value
 
 
-class Schedule(models.Model):
+class Class(models.Model):
     week_days = [
         (0, _("Monday")),
         (1, _("Tuesday")),
@@ -74,16 +40,39 @@ class Schedule(models.Model):
         (6, _("Sunday")),
     ]
 
-    class_name = models.OneToOneField(Class, on_delete=models.CASCADE, verbose_name="Class name", related_name="schedule")
+    name = models.CharField(max_length=150, db_index=True, unique=True)
+    students = models.ManyToManyField(User, related_name="student_classes")
+    teacher = models.ForeignKey(User, on_delete=models.CASCADE, related_name="teacher_classes")
     days = ChoiceArrayField(base_field=models.IntegerField(choices=week_days), default=list, size=5, blank=True)
     start_time = models.TimeField(auto_now=False, auto_now_add=False)
     end_time = models.TimeField(auto_now=False, auto_now_add=False)
 
     class Meta:
-        verbose_name_plural = "Schedule"
+        verbose_name_plural = "Class"
 
     def __str__(self):
-        return self.class_name.name
+        return self.name
+
+    def create_lessons(self):
+        last_lesson = self.lessons.filter(class_name=self.pk).order_by("-time_end").first()
+        date_from = last_lesson.time_end if last_lesson else datetime.now()
+        date_end = datetime.now() + timedelta(weeks=4)
+        if date_end.date() <= date_from.date():
+            return
+
+        lessons_to_create = list()
+        scheduled_days = self.days
+        for day in range(1, (date_end - date_from).days + 1):
+            date = date_from + timedelta(days=day)
+            if date.weekday() in scheduled_days:
+                lessons_to_create.append(Lessons(
+                    class_name=self,
+                    time_start=datetime.combine(date=date, time=self.start_time),
+                    time_end=datetime.combine(date=date, time=self.end_time),
+                ))
+        if len(lessons_to_create) > 0:
+            logger.info(f"Created {len(lessons_to_create)} lessons for {self} class.")
+            return Lessons.objects.bulk_create(lessons_to_create)
 
 
 class Lessons(models.Model):

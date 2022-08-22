@@ -1,7 +1,6 @@
 from rest_framework.permissions import BasePermission
 from users.models import User
-from rest_framework.response import Response
-from rest_framework import status
+from english.models import Class, Lessons
 
 
 class IsEmployee(BasePermission):
@@ -13,14 +12,10 @@ class IsEmployee(BasePermission):
         )
 
     def has_object_permission(self, request, view, obj):
-        try:
-            return (
-                bool(request.user in obj.class_name.students)
-                if not bool(request.user in obj.students)
-                else bool(request.user in obj.students)
-            )
-        except:
-            return Response(status=status.HTTP_403_FORBIDDEN)
+        if obj == Class:
+            return bool(request.user == obj.students)
+        elif obj == Lessons:
+            return bool(request.user == obj.class_name.students)
 
 
 class IsTeacher(BasePermission):
@@ -32,11 +27,7 @@ class IsTeacher(BasePermission):
         )
 
     def has_object_permission(self, request, view, obj):
-        try:
-            return (
-                bool(request.user == obj.class_name.teacher)
-                if not bool(request.user == obj.teacher)
-                else bool(request.user == obj.teacher)
-            )
-        except:
-            return Response(status=status.HTTP_403_FORBIDDEN)
+        if type(obj) == Class:
+            return bool(request.user == obj.teacher)
+        elif type(obj) == Lessons:
+            return bool(request.user == obj.class_name.teacher)
