@@ -1,24 +1,25 @@
 from django.urls import path
 from .views import (
     ClassListAPIView,
-    CurrentClassesForStudentListAPIView,
-    CurrentClassesForTeacherListCreateAPIView,
-    CurrentLessonsForStudentListAPIView,
-    CurrentLessonsForTeacherListAPIView,
-    UpdateClassRetrieveDestroyAPIView,
-    UpdateLessonRetrieveUpdateAPIView,
-    CurrentStudentToClassUpdateAPIView,
+    ClassesForStudentListAPIView,
+    ClassesForTeacherListCreateAPIView,
+    LessonsForStudentListAPIView,
+    LessonsForTeacherListAPIView,
+    ClassForTeacherRetrieveUpdateDestroyAPIView,
+    LessonForTeacherRetrieveUpdateAPIView,
+    JoinToClassUpdateDestroyAPIView,
 )
 
 
 urlpatterns = [
     path("", ClassListAPIView.as_view(), name="classes-list"),
-    path("student/classes/", CurrentClassesForStudentListAPIView.as_view(), name="student-classes"),
-    path("student/lessons/", CurrentLessonsForStudentListAPIView.as_view(), name="student-lessons"),
-    path("student/classes/<int:pk>/join-success/", CurrentStudentToClassUpdateAPIView.as_view(), name="join-class"),
 
-    path("teacher/classes/", CurrentClassesForTeacherListCreateAPIView.as_view(), name="teacher-classes"),
-    path("teacher/classes?id=<int:pk>/change/", UpdateClassRetrieveDestroyAPIView.as_view(), name="change-class"),
-    path("teacher/lessons/", CurrentLessonsForTeacherListAPIView.as_view(), name="teacher-lessons"),
-    path("teacher/lessons?id=<int:pk>/change/", UpdateLessonRetrieveUpdateAPIView.as_view(), name="change-lesson")
+    path("student/classes/<int:pk>/join/", JoinToClassUpdateDestroyAPIView.as_view(), name="join-to-class"),
+    path("student/classes/", ClassesForStudentListAPIView.as_view(), name="student-classes-list"),
+    path("student/lessons/", LessonsForStudentListAPIView.as_view(), name="student-lessons-list"),
+
+    path("teacher/classes/<int:pk>/", ClassForTeacherRetrieveUpdateDestroyAPIView.as_view(), name="teacher-classes-retrive-update-destroy"),
+    path("teacher/classes/", ClassesForTeacherListCreateAPIView.as_view(), name="teacher-classes-list-create"),
+    path("teacher/lessons/<int:pk>/", LessonForTeacherRetrieveUpdateAPIView.as_view(), name="teacher-lesson-retrive-update"),
+    path("teacher/lessons/", LessonsForTeacherListAPIView.as_view(), name="teacher-lessons-list-create"),
 ]
