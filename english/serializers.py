@@ -24,11 +24,22 @@ class ClassSerializer(serializers.ModelSerializer):
         ret["days"] = [day[1] for day in Class.week_days if day[0] in instance.days]
         return ret
 
+    def create(self, validated_data):
+        validated_data["teacher"] = self.context["request"].user
+        return super(ClassSerializer, self).create(validated_data)
+
+    def update(self, instance, validated_data):
+        validated_data.pop("teacher", None)
+        return super(ClassSerializer, self).update(instance, validated_data)
+
     def validate(self, attrs):
-        if "start_time" in attrs and "end_time" in attrs:
-            if attrs["start_time"] > attrs["end_time"]:
-                raise ValidationError("The start time can't be greater than the end time.")
+        if "start_time" in attrs and "end_time" in attrs and attrs["start_time"] > attrs["end_time"]:
+            raise ValidationError("The start time can't be greater than the end time.")
+        if ("start_time" in attrs and "end_time" not in attrs) or \
+                ("start_time" not in attrs and "end_time" in attrs):
+            raise ValidationError("Please, fill in the start and end times.")
         if "days" in attrs:
+            attrs["days"] = list(set(attrs["days"]))
             for day in attrs["days"]:
                 if not 0 <= day < 8:
                     raise ValidationError("Incorrect selected days of the week.")
@@ -46,15 +57,15 @@ class LessonsSerializer(serializers.ModelSerializer):
         return ret
 
     def update(self, instance, validated_data):
-        if "class_name" in validated_data:
-            validated_data.pop("class_name")
-        if "_status" in validated_data:
-            if validated_data["_status"] != "CANCELED":
-                raise ValidationError("Lesson status can be changed only to CANCELED.")
+        validated_data.pop("class_name", None)
+        if validated_data.get("status") and validated_data["status"] != Lessons.CANCELED:
+            raise ValidationError("Lesson status can be changed only to CANCELED.")
         return super(LessonsSerializer, self).update(instance, validated_data)
 
     def validate(self, attrs):
-        if "time_start" in attrs and "time_end" in attrs:
-            if attrs["time_start"] > attrs["time_end"]:
-                raise ValidationError("The start time can't be greater than the end time.")
+        if "time_start" in attrs and "time_end" in attrs and attrs["time_start"] > attrs["time_end"]:
+            raise ValidationError("The start time can't be greater than the end time.")
+        if ("start_time" in attrs and "end_time" not in attrs) or \
+                ("start_time" not in attrs and "end_time" in attrs):
+            raise ValidationError("Please, fill in the start and end times.")
         return attrs

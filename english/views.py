@@ -36,14 +36,14 @@ class JoinToClassUpdateDestroyAPIView(UpdateAPIView, DestroyAPIView):
         instance.students.add(self.request.user)
         instance.save()
         serializer = self.get_serializer(instance)
-        return Response(serializer.data)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     def delete(self, request, *args, **kwargs):
         instance = self.get_object()
         if instance.students.filter(id=self.request.user.id).exists():
             instance.students.remove(self.request.user)
             instance.save()
-        return Response(status=status.HTTP_200_OK)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class ClassesForStudentListAPIView(ListAPIView):
@@ -84,7 +84,7 @@ class ClassForTeacherRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
         return super().get_queryset().filter(teacher=self.request.user)
 
 
-class LessonsForTeacherListAPIView(ListAPIView):
+class LessonsForTeacherListCreateAPIView(ListCreateAPIView):
     queryset = Lessons.objects.all()
     serializer_class = LessonsSerializer
     permission_classes = [IsAuthenticated, IsTeacher]

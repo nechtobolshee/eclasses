@@ -12,9 +12,10 @@ class ClassesForStudent(APITestCase):
 
     def setUp(self):
         self.student = User.objects.get(id=1)
-        self.client.force_login(user=self.student)
+        self.teacher = User.objects.get(id=2)
 
     def test_get_classes_list(self):
+        self.client.force_login(user=self.student)
         expected_data = {
             "pk": 1,
             "name": "FirstClass",
@@ -35,7 +36,8 @@ class ClassesForStudent(APITestCase):
         self.assertEqual(len(response.data), 3)
         self.assertDictEqual(dict(response.data[0]), expected_data)
 
-    def test_get_classes(self):
+    def test_get_classes_success(self):
+        self.client.force_login(user=self.student)
         expected_data = {
             "pk": 1,
             "name": "FirstClass",
@@ -56,12 +58,20 @@ class ClassesForStudent(APITestCase):
         self.assertEqual(len(response.data), 3)
         self.assertDictEqual(dict(response.data[0]), expected_data)
 
+    def test_get_classes_failed(self):
+        self.client.force_login(user=self.teacher)
+        url = reverse("student-classes-list")
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
     def test_leave_class(self):
+        self.client.force_login(user=self.student)
         url = "http://0.0.0.0:8000/english/student/classes/1/join/"
         response = self.client.delete(url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
     def test_join_class(self):
+        self.client.force_login(user=self.student)
         expected_data = {
             "pk": 1,
             "name": "FirstClass",
@@ -88,10 +98,11 @@ class ClassesForTeacher(APITestCase):
     ]
 
     def setUp(self):
+        self.student = User.objects.get(id=1)
         self.teacher = User.objects.get(id=2)
-        self.client.force_login(user=self.teacher)
 
-    def test_get_classes(self):
+    def test_get_classes_success(self):
+        self.client.force_login(user=self.teacher)
         expected_data = {
             "pk": 1,
             "name": "FirstClass",
@@ -112,7 +123,14 @@ class ClassesForTeacher(APITestCase):
         self.assertEqual(len(response.data), 1)
         self.assertDictEqual(dict(response.data[0]), expected_data)
 
-    def test_search_classes(self):
+    def test_get_classes_failed(self):
+        self.client.force_login(user=self.student)
+        url = reverse("teacher-classes-list-create")
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_search_classes_success(self):
+        self.client.force_login(user=self.teacher)
         expected_data = {
             "pk": 1,
             "name": "FirstClass",
@@ -133,17 +151,35 @@ class ClassesForTeacher(APITestCase):
         self.assertEqual(len(response.data), 1)
         self.assertDictEqual(dict(response.data[0]), expected_data)
 
+    def test_search_classes_failed(self):
+        self.client.force_login(user=self.teacher)
         bad_url = f'{reverse("classes-list")}?name=LostClass'
         empty_response = self.client.get(bad_url)
         self.assertEqual(len(empty_response.data), 0)
 
-    def test_delete_class(self):
+    def test_get_class_success(self):
+        self.client.force_login(user=self.teacher)
         url = "http://0.0.0.0:8000/english/teacher/classes/1/"
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
+    def test_get_class_failed(self):
+        self.client.force_login(user=self.student)
+        url = "http://0.0.0.0:8000/english/teacher/classes/1/"
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_delete_class_success(self):
+        self.client.force_login(user=self.teacher)
+        url = "http://0.0.0.0:8000/english/teacher/classes/1/"
         response = self.client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+    def test_delete_class_failed(self):
+        self.client.force_login(user=self.student)
+        url = "http://0.0.0.0:8000/english/teacher/classes/1/"
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
 
 class LessonsForStudent(APITestCase):
@@ -153,9 +189,10 @@ class LessonsForStudent(APITestCase):
 
     def setUp(self):
         self.student = User.objects.get(id=1)
-        self.client.force_login(user=self.student)
+        self.teacher = User.objects.get(id=2)
 
-    def test_get_lessons(self):
+    def test_get_lessons_success(self):
+        self.client.force_login(user=self.student)
         expected_data = {
             "pk": 1,
             "class_name": "FirstClass",
@@ -169,6 +206,12 @@ class LessonsForStudent(APITestCase):
         self.assertEqual(len(response.data), 2)
         self.assertDictEqual(dict(response.data[0]), expected_data)
 
+    def test_get_lessons_failed(self):
+        self.client.force_login(user=self.teacher)
+        url = reverse("student-lessons-list")
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
 
 class LessonsForTeacher(APITestCase):
     fixtures = [
@@ -176,10 +219,11 @@ class LessonsForTeacher(APITestCase):
     ]
 
     def setUp(self):
+        self.student = User.objects.get(id=1)
         self.teacher = User.objects.get(id=2)
-        self.client.force_login(user=self.teacher)
 
-    def test_get_lessons(self):
+    def test_get_lessons_success(self):
+        self.client.force_login(user=self.teacher)
         expected_data = {
             "pk": 1,
             "class_name": "FirstClass",
@@ -193,7 +237,27 @@ class LessonsForTeacher(APITestCase):
         self.assertEqual(len(response.data), 1)
         self.assertDictEqual(dict(response.data[0]), expected_data)
 
-    def test_update_lesson(self):
+    def test_get_lessons_failed(self):
+        self.client.force_login(user=self.student)
+        url = reverse("teacher-lessons-list-create")
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_get_one_lesson_success(self):
+        self.client.force_login(user=self.teacher)
+        expected_data = {
+            "pk": 1,
+            "class_name": "FirstClass",
+            "_status": "COMING",
+            "time_start": "2030-07-04T01:14:43",
+            "time_end": "2030-10-30T01:14:46"
+        }
+        url = "http://0.0.0.0:8000/english/teacher/lessons/1/"
+        response = self.client.get(url)
+        self.assertDictEqual(dict(response.data), expected_data)
+
+    def test_update_lesson_success(self):
+        self.client.force_login(user=self.teacher)
         data = {
             "time_start": "2030-07-04T01:14:43",
             "time_end": "2032-10-30T01:14:46"
@@ -211,7 +275,8 @@ class LessonsForTeacher(APITestCase):
         response = self.client.get(url)
         self.assertDictEqual(dict(response.data[0]), expected_data)
 
-    def test_update_lesson_bad_data(self):
+    def test_update_lesson_failed(self):
+        self.client.force_login(user=self.teacher)
         data = {
             "time_start": "2050-07-04T01:14:43",
             "time_end": "2030-10-30T01:14:46"
@@ -220,3 +285,12 @@ class LessonsForTeacher(APITestCase):
         response = self.client.patch(url, data=data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
+    def test_update_lesson_failed_403(self):
+        self.client.force_login(user=self.student)
+        data = {
+            "time_start": "2030-07-04T01:14:43",
+            "time_end": "2032-10-30T01:14:46"
+        }
+        url = "http://0.0.0.0:8000/english/teacher/lessons/1/"
+        response = self.client.patch(url, data=data)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)

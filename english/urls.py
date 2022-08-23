@@ -4,7 +4,7 @@ from .views import (
     ClassesForStudentListAPIView,
     ClassesForTeacherListCreateAPIView,
     LessonsForStudentListAPIView,
-    LessonsForTeacherListAPIView,
+    LessonsForTeacherListCreateAPIView,
     ClassForTeacherRetrieveUpdateDestroyAPIView,
     LessonForTeacherRetrieveUpdateAPIView,
     JoinToClassUpdateDestroyAPIView,
@@ -21,5 +21,5 @@ urlpatterns = [
     path("teacher/classes/<int:pk>/", ClassForTeacherRetrieveUpdateDestroyAPIView.as_view(), name="teacher-classes-retrive-update-destroy"),
     path("teacher/classes/", ClassesForTeacherListCreateAPIView.as_view(), name="teacher-classes-list-create"),
     path("teacher/lessons/<int:pk>/", LessonForTeacherRetrieveUpdateAPIView.as_view(), name="teacher-lesson-retrive-update"),
-    path("teacher/lessons/", LessonsForTeacherListAPIView.as_view(), name="teacher-lessons-list-create"),
+    path("teacher/lessons/", LessonsForTeacherListCreateAPIView.as_view(), name="teacher-lessons-list-create"),
 ]
