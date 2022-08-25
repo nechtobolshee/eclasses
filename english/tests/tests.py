@@ -321,9 +321,9 @@ class LessonsForStudent(APITestCase):
         expected_data = {
             "pk": 1,
             "class_name": "FirstClass",
-            "_status": "COMING",
-            "time_start": "2030-07-04T01:14:43",
-            "time_end": "2030-10-30T01:14:46"
+            "status": "COMING",
+            "start_time": "2030-07-04T01:14:43",
+            "end_time": "2030-10-30T01:14:46"
         }
         url = reverse("student-lessons-list")
         response = self.client.get(url)
@@ -352,9 +352,9 @@ class LessonsForTeacher(APITestCase):
         expected_data = {
             "pk": 1,
             "class_name": "FirstClass",
-            "_status": "COMING",
-            "time_start": "2030-07-04T01:14:43",
-            "time_end": "2030-10-30T01:14:46"
+            "status": "COMING",
+            "start_time": "2030-07-04T01:14:43",
+            "end_time": "2030-10-30T01:14:46"
         }
         url = reverse("teacher-lessons-list-create")
         response = self.client.get(url)
@@ -373,9 +373,9 @@ class LessonsForTeacher(APITestCase):
         expected_data = {
             "pk": 1,
             "class_name": "FirstClass",
-            "_status": "COMING",
-            "time_start": "2030-07-04T01:14:43",
-            "time_end": "2030-10-30T01:14:46"
+            "status": "COMING",
+            "start_time": "2030-07-04T01:14:43",
+            "end_time": "2030-10-30T01:14:46"
         }
         url = reverse("teacher-lesson-retrive-update", kwargs={"pk": 1})
         response = self.client.get(url)
@@ -390,39 +390,107 @@ class LessonsForTeacher(APITestCase):
     def test_update_lesson_success(self):
         self.client.force_login(user=self.teacher)
         data = {
-            "time_start": "2030-07-04T01:14:43",
-            "time_end": "2032-10-30T01:14:46"
+            "status": "CANCELED",
+            "start_time": "2030-07-04T01:14:43",
+            "end_time": "2032-10-30T01:14:46"
         }
         expected_data = {
             "pk": 1,
             "class_name": "FirstClass",
-            "_status": "COMING",
-            "time_start": "2030-07-04T01:14:43",
-            "time_end": "2032-10-30T01:14:46"
+            "status": "CANCELED",
+            "start_time": "2030-07-04T01:14:43",
+            "end_time": "2032-10-30T01:14:46"
         }
         url = reverse("teacher-lesson-retrive-update", kwargs={"pk": 1})
-        self.client.patch(url, data=data)
-        url = reverse("teacher-lessons-list-create")
-        response = self.client.get(url)
-        self.assertDictEqual(dict(response.data[0]), expected_data)
+        response = self.client.patch(url, data=data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertDictEqual(dict(response.data), expected_data)
 
-    def test_update_lesson_failed_incorrect_time(self):
+    def test_update_lesson_failed_incorrect_time_1(self):
         self.client.force_login(user=self.teacher)
         data = {
-            "time_start": "2050-07-04T01:14:43",
-            "time_end": "2030-10-30T01:14:46"
+            "start_time": "2050-07-04T01:14:43",
+            "end_time": "2030-10-30T01:14:46"
         }
         url = reverse("teacher-lesson-retrive-update", kwargs={"pk": 1})
         response = self.client.patch(url, data=data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn("The start time can't be greater than the end time.", response.data["non_field_errors"])
+        self.assertEqual("The start time can't be greater than the end time.", response.data["detail"][0])
+
+    def test_update_lesson_failed_incorrect_time_2(self):
+        self.client.force_login(user=self.teacher)
+        data = {
+            "start_time": "2050-07-04T01:14:43"
+        }
+        url = reverse("teacher-lesson-retrive-update", kwargs={"pk": 1})
+        response = self.client.patch(url, data=data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual("Please, fill in the start and end times.", response.data["detail"][0])
 
     def test_update_lesson_failed_403(self):
         self.client.force_login(user=self.student)
         data = {
-            "time_start": "2030-07-04T01:14:43",
-            "time_end": "2032-10-30T01:14:46"
+            "start_time": "2030-07-04T01:14:43",
+            "end_time": "2032-10-30T01:14:46"
         }
         url = reverse("teacher-lesson-retrive-update", kwargs={"pk": 1})
         response = self.client.patch(url, data=data)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_update_lesson_failed_status(self):
+        self.client.force_login(user=self.teacher)
+        data = {
+            "status": "PROGRESS"
+        }
+        url = reverse("teacher-lesson-retrive-update", kwargs={"pk": 1})
+        response = self.client.patch(url, data=data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual("Lesson status can be changed only to CANCELED.", response.data["status"])
+
+    def test_create_lesson_success(self):
+        self.client.force_login(user=self.teacher)
+        data = {
+            "class_name": 1,
+            "status": "COMING",
+            "start_time": "2040-07-04T01:14:43",
+            "end_time": "2042-10-30T01:14:46"
+        }
+        url = reverse("teacher-lessons-list-create")
+        response = self.client.post(url, data=data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_create_lesson_failed_403(self):
+        self.client.force_login(user=self.student)
+        data = {
+            "class_name": 1,
+            "status": "COMING",
+            "start_time": "2040-07-04T01:14:43",
+            "end_time": "2042-10-30T01:14:46"
+        }
+        url = reverse("teacher-lessons-list-create")
+        response = self.client.post(url, data=data)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_create_lesson_failed_incorrect_time(self):
+        self.client.force_login(user=self.teacher)
+        data = {
+            "class_name": 1,
+            "status": "COMING",
+            "start_time": "2010-07-04T01:14:43",
+            "end_time": "2015-07-04T01:14:43",
+        }
+        url = reverse("teacher-lessons-list-create")
+        response = self.client.post(url, data=data)
+        self.assertEqual("Start time should be larger than current time.", response.data["start_time"][0])
+
+    def test_create_lesson_failed_incorrect_time_2(self):
+        self.client.force_login(user=self.teacher)
+        data = {
+            "class_name": 1,
+            "status": "COMING",
+            "start_time": "2040-07-04T01:14:43",
+            "end_time": "2030-07-04T01:14:43",
+        }
+        url = reverse("teacher-lessons-list-create")
+        response = self.client.post(url, data=data)
+        self.assertEqual("The start time can't be greater than the end time.", response.data["detail"][0])

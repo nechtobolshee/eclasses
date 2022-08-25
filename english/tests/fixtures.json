@@ -131,8 +131,8 @@
         "fields": {
             "class_name": "1",
             "_status": "COMING",
-            "time_start": "2030-07-04T01:14:43",
-            "time_end": "2030-10-30T01:14:46"
+            "start_time": "2030-07-04T01:14:43",
+            "end_time": "2030-10-30T01:14:46"
         }
     },
     {
@@ -141,8 +141,8 @@
         "fields": {
             "class_name": "2",
             "_status": "COMING",
-            "time_start": "2030-07-04T01:14:43",
-            "time_end": "2030-10-30T01:14:46"
+            "start_time": "2030-07-04T01:14:43",
+            "end_time": "2030-10-30T01:14:46"
         }
     }
 ]

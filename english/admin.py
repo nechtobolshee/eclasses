@@ -18,7 +18,7 @@ class AdminClass(admin.ModelAdmin):
 
 @admin.register(Lessons)
 class AdminLessons(admin.ModelAdmin):
-    list_display = ("class_name", "status", "time_start", "time_end")
+    list_display = ("class_name", "status", "start_time", "end_time")
 
     def save_model(self, request, obj, form, change):
         try:

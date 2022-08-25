@@ -55,8 +55,8 @@ class Class(models.Model):
 
     def create_lessons(self):
         logger.info(f"Checking lessons for {self} class and starting to create new.")
-        last_lesson = self.lessons.all().order_by("-time_end").first()
-        date_from = last_lesson.time_end if last_lesson else datetime.now()
+        last_lesson = self.lessons.all().order_by("-end_time").first()
+        date_from = last_lesson.end_time if last_lesson else datetime.now()
         date_end = datetime.now() + timedelta(weeks=4)
         if date_end.date() <= date_from.date():
             return
@@ -67,15 +67,14 @@ class Class(models.Model):
             if date.weekday() in self.days:
                 lessons_to_create.append(Lessons(
                     class_name=self,
-                    time_start=datetime.combine(date=date, time=self.start_time),
-                    time_end=datetime.combine(date=date, time=self.end_time),
+                    start_time=datetime.combine(date=date, time=self.start_time),
+                    end_time=datetime.combine(date=date, time=self.end_time),
                 ))
         if len(lessons_to_create) > 0:
             Lessons.objects.bulk_create(lessons_to_create)
             logger.warning(f"Created {len(lessons_to_create)} lessons for {self} class.")
         else:
             logger.warning(f"Lessons for {self} class have already been created. Nothing has changed.")
-
 
 
 class Lessons(models.Model):
@@ -93,12 +92,12 @@ class Lessons(models.Model):
 
     class_name = models.ForeignKey(Class, on_delete=models.CASCADE, verbose_name="class_name", related_name="lessons")
     _status = models.CharField(max_length=15, choices=status_choice, default=COMING_SOON)
-    time_start = models.DateTimeField()
-    time_end = models.DateTimeField()
+    start_time = models.DateTimeField()
+    end_time = models.DateTimeField()
 
     class Meta:
         verbose_name_plural = "Lessons"
-        ordering = ['time_start']
+        ordering = ['start_time']
 
     @property
     def status(self):
@@ -120,31 +119,31 @@ class Lessons(models.Model):
             raise ValidationError("Wrong status.. Please, set allowed status")
 
     def set_status_coming(self):
-        if self.time_start > datetime.now():
+        if self.start_time > datetime.now():
             self._status = Lessons.COMING_SOON
-        elif self.time_end > datetime.now() >= self.time_start:
+        elif self.end_time > datetime.now() >= self.start_time:
             self.error_message(failed_status=Lessons.COMING_SOON, reason="going now")
-        elif self.time_end <= datetime.now():
+        elif self.end_time <= datetime.now():
             self.error_message(failed_status=Lessons.COMING_SOON, reason="already ended")
 
     def set_status_progress(self):
-        if self.time_end > datetime.now() >= self.time_start:
+        if self.end_time > datetime.now() >= self.start_time:
             self._status = Lessons.IN_PROGRESS
-        elif self.time_start > datetime.now():
+        elif self.start_time > datetime.now():
             self.error_message(failed_status=Lessons.IN_PROGRESS, reason="haven't started")
-        elif self.time_end <= datetime.now():
+        elif self.end_time <= datetime.now():
             self.error_message(failed_status=Lessons.IN_PROGRESS, reason="already ended")
 
     def set_status_done(self):
-        if self.time_end <= datetime.now():
+        if self.end_time <= datetime.now():
             self._status = Lessons.DONE
-        elif self.time_start > datetime.now():
+        elif self.start_time > datetime.now():
             self.error_message(failed_status=Lessons.DONE, reason="haven't started")
-        elif self.time_end > datetime.now() >= self.time_start:
+        elif self.end_time > datetime.now() >= self.start_time:
             self.error_message(failed_status=Lessons.DONE, reason="going now")
 
     def set_status_canceled(self):
-        if self._status != Lessons.DONE or self.time_end <= datetime.now():
+        if self._status != Lessons.DONE or self.end_time <= datetime.now():
             self._status = Lessons.CANCELED
         else:
             self.error_message(failed_status=Lessons.CANCELED, reason="already ended")

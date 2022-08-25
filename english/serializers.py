@@ -1,6 +1,7 @@
-from requests import Response
-from rest_framework import serializers, status
-from django.core.exceptions import ValidationError
+from datetime import datetime
+
+from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
 
 from users.models import User
 from .models import Class, Lessons
@@ -30,10 +31,11 @@ class ClassSerializer(serializers.ModelSerializer):
         return super(ClassSerializer, self).create(validated_data)
 
     def validate(self, attrs):
-        if "start_time" in attrs and "end_time" in attrs and attrs["start_time"] > attrs["end_time"]:
+        start_time = attrs.get("start_time")
+        end_time = attrs.get("end_time")
+        if start_time and end_time and start_time > end_time:
             raise ValidationError("The start time can't be greater than the end time.")
-        if ("start_time" in attrs and "end_time" not in attrs) or \
-                ("start_time" not in attrs and "end_time" in attrs):
+        if (start_time and not end_time) or (end_time and not start_time):
             raise ValidationError("Please, fill in the start and end times.")
         if "days" in attrs:
             attrs["days"] = list(set(attrs["days"]))
@@ -44,25 +46,35 @@ class ClassSerializer(serializers.ModelSerializer):
 
 
 class LessonsSerializer(serializers.ModelSerializer):
+    status = serializers.CharField(max_length=15)
+
     class Meta:
         model = Lessons
-        fields = ("pk", "class_name", "_status", "time_start", "time_end")
+        fields = ("pk", "class_name", "status", "start_time", "end_time")
 
     def to_representation(self, instance):
         ret = super().to_representation(instance)
         ret["class_name"] = ClassSerializer(instance.class_name).data["name"]
         return ret
 
+    def create(self, validated_data):
+        validated_data.pop("status", None)
+        return super(LessonsSerializer, self).create(validated_data)
+
     def update(self, instance, validated_data):
         validated_data.pop("class_name", None)
-        if "_status" in validated_data and validated_data["_status"] != Lessons.CANCELED:
-            raise ValidationError("Lesson status can be changed only to CANCELED.")
-        return super(LessonsSerializer, self).update(instance, validated_data)
+        if "status" in validated_data and validated_data["status"] != Lessons.CANCELED:
+            raise ValidationError({"status": "Lesson status can be changed only to CANCELED."})
+        instance = super(LessonsSerializer, self).update(instance, validated_data)
+        return instance
 
     def validate(self, attrs):
-        if "time_start" in attrs and "time_end" in attrs and attrs["time_start"] > attrs["time_end"]:
-            raise ValidationError("The start time can't be greater than the end time.")
-        if ("start_time" in attrs and "end_time" not in attrs) or \
-                ("start_time" not in attrs and "end_time" in attrs):
-            raise ValidationError("Please, fill in the start and end times.")
+        start_time = attrs.get("start_time")
+        end_time = attrs.get("end_time")
+        if (start_time and not end_time) or (end_time and not start_time):
+            raise ValidationError({"detail": "Please, fill in the start and end times."})
+        if start_time and start_time < datetime.now():
+            raise ValidationError({"start_time": "Start time should be larger than current time."})
+        if start_time and end_time and start_time > end_time:
+            raise ValidationError({"detail": "The start time can't be greater than the end time."})
         return attrs
