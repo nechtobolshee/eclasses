@@ -1,4 +1,5 @@
-from rest_framework import serializers
+from requests import Response
+from rest_framework import serializers, status
 from django.core.exceptions import ValidationError
 
 from users.models import User
@@ -28,10 +29,6 @@ class ClassSerializer(serializers.ModelSerializer):
         validated_data["teacher"] = self.context["request"].user
         return super(ClassSerializer, self).create(validated_data)
 
-    def update(self, instance, validated_data):
-        validated_data.pop("teacher", None)
-        return super(ClassSerializer, self).update(instance, validated_data)
-
     def validate(self, attrs):
         if "start_time" in attrs and "end_time" in attrs and attrs["start_time"] > attrs["end_time"]:
             raise ValidationError("The start time can't be greater than the end time.")
@@ -58,7 +55,7 @@ class LessonsSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         validated_data.pop("class_name", None)
-        if validated_data.get("status") and validated_data["status"] != Lessons.CANCELED:
+        if "_status" in validated_data and validated_data["_status"] != Lessons.CANCELED:
             raise ValidationError("Lesson status can be changed only to CANCELED.")
         return super(LessonsSerializer, self).update(instance, validated_data)
 

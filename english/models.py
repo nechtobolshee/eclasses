@@ -54,25 +54,28 @@ class Class(models.Model):
         return self.name
 
     def create_lessons(self):
-        last_lesson = self.lessons.filter(class_name=self.pk).order_by("-time_end").first()
+        logger.info(f"Checking lessons for {self} class and starting to create new.")
+        last_lesson = self.lessons.all().order_by("-time_end").first()
         date_from = last_lesson.time_end if last_lesson else datetime.now()
         date_end = datetime.now() + timedelta(weeks=4)
         if date_end.date() <= date_from.date():
             return
 
         lessons_to_create = list()
-        scheduled_days = self.days
         for day in range(1, (date_end - date_from).days + 1):
             date = date_from + timedelta(days=day)
-            if date.weekday() in scheduled_days:
+            if date.weekday() in self.days:
                 lessons_to_create.append(Lessons(
                     class_name=self,
                     time_start=datetime.combine(date=date, time=self.start_time),
                     time_end=datetime.combine(date=date, time=self.end_time),
                 ))
         if len(lessons_to_create) > 0:
-            logger.info(f"Created {len(lessons_to_create)} lessons for {self} class.")
-            return Lessons.objects.bulk_create(lessons_to_create)
+            Lessons.objects.bulk_create(lessons_to_create)
+            logger.warning(f"Created {len(lessons_to_create)} lessons for {self} class.")
+        else:
+            logger.warning(f"Lessons for {self} class have already been created. Nothing has changed.")
+
 
 
 class Lessons(models.Model):
