@@ -375,6 +375,9 @@ ALTER SEQUENCE public.django_site_id_seq OWNED BY public.django_site.id;
 CREATE TABLE public.english_class (
     id bigint NOT NULL,
     name character varying(150) NOT NULL,
+    days integer[] NOT NULL,
+    start_time time without time zone NOT NULL,
+    end_time time without time zone NOT NULL,
     teacher_id bigint NOT NULL
 );
 
@@ -437,6 +440,42 @@ ALTER SEQUENCE public.english_class_students_id_seq OWNED BY public.english_clas
 
 
 --
+-- Name: english_lessons; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.english_lessons (
+    id bigint NOT NULL,
+    _status character varying(15) NOT NULL,
+    time_start timestamp with time zone NOT NULL,
+    time_end timestamp with time zone NOT NULL,
+    class_name_id bigint NOT NULL
+);
+
+
+ALTER TABLE public.english_lessons OWNER TO postgres;
+
+--
+-- Name: english_lessons_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.english_lessons_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.english_lessons_id_seq OWNER TO postgres;
+
+--
+-- Name: english_lessons_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.english_lessons_id_seq OWNED BY public.english_lessons.id;
+
+
+--
 -- Name: users_user; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -452,7 +491,8 @@ CREATE TABLE public.users_user (
     is_staff boolean NOT NULL,
     is_active boolean NOT NULL,
     date_joined timestamp with time zone NOT NULL,
-    avatar character varying(100)
+    avatar character varying(100) NOT NULL,
+    _role character varying(10) NOT NULL
 );
 
 
@@ -625,6 +665,13 @@ ALTER TABLE ONLY public.english_class_students ALTER COLUMN id SET DEFAULT nextv
 
 
 --
+-- Name: english_lessons id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.english_lessons ALTER COLUMN id SET DEFAULT nextval('public.english_lessons_id_seq'::regclass);
+
+
+--
 -- Name: users_user id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -650,10 +697,6 @@ ALTER TABLE ONLY public.users_user_user_permissions ALTER COLUMN id SET DEFAULT 
 --
 
 COPY public.account_emailaddress (id, email, verified, "primary", user_id) FROM stdin;
-1	testuser1@gmail.com	f	t	2
-2	testuser2@gmail.com	f	t	3
-3	testuser3@gmail.com	f	t	4
-4	testuser4@gmail.com	f	t	5
 \.
 
 
@@ -746,6 +789,10 @@ COPY public.auth_permission (id, name, content_type_id, codename) FROM stdin;
 58	Can change class	15	change_class
 59	Can delete class	15	delete_class
 60	Can view class	15	view_class
+61	Can add lessons	16	add_lessons
+62	Can change lessons	16	change_lessons
+63	Can delete lessons	16	delete_lessons
+64	Can view lessons	16	view_lessons
 \.
 
 
@@ -762,14 +809,17 @@ COPY public.authtoken_token (key, created, user_id) FROM stdin;
 --
 
 COPY public.django_admin_log (id, action_time, object_id, object_repr, action_flag, change_message, content_type_id, user_id) FROM stdin;
-1	2022-06-07 21:16:54.822397+00	1	Class object (1)	1	[{"added": {}}]	15	1
-2	2022-06-08 19:42:48.452408+00	2	Class object (2)	1	[{"added": {}}]	15	1
-3	2022-06-08 19:44:03.402642+00	3	Class object (3)	1	[{"added": {}}]	15	1
-4	2022-06-08 19:44:15.374041+00	1	maksim	2	[{"changed": {"fields": ["First name", "Last name"]}}]	14	1
-5	2022-06-08 19:44:23.2586+00	2	testuser1	2	[{"changed": {"fields": ["First name", "Last name"]}}]	14	1
-6	2022-06-08 19:44:29.640634+00	3	testuser2	2	[{"changed": {"fields": ["First name", "Last name"]}}]	14	1
-7	2022-06-08 19:44:35.8128+00	4	testuser3	2	[{"changed": {"fields": ["First name", "Last name"]}}]	14	1
-8	2022-06-08 19:44:43.676834+00	5	testuser4	2	[{"changed": {"fields": ["First name", "Last name"]}}]	14	1
+1	2022-08-18 16:00:05.726431+00	2		1	[{"added": {}}]	14	1
+2	2022-08-18 16:00:15.109081+00	2	Matthew Becher	2	[{"changed": {"fields": ["First name", "Last name", "Email address"]}}]	14	1
+3	2022-08-18 16:00:24.143842+00	1	Maksim Lukash	2	[{"changed": {"fields": ["First name", "Last name"]}}]	14	1
+4	2022-08-18 16:00:37.212411+00	3		1	[{"added": {}}]	14	1
+5	2022-08-18 16:00:45.161279+00	3	Ayden Henris	2	[{"changed": {"fields": ["First name", "Last name", "Email address"]}}]	14	1
+6	2022-08-18 16:00:56.757234+00	2	Matthew Becher	2	[{"changed": {"fields": [" role"]}}]	14	1
+7	2022-08-18 16:01:11.577314+00	4		1	[{"added": {}}]	14	1
+8	2022-08-18 16:01:21.960583+00	4	Damian Ward	2	[{"changed": {"fields": ["First name", "Last name", "Email address"]}}]	14	1
+9	2022-08-18 16:01:31.161047+00	5		1	[{"added": {}}]	14	1
+10	2022-08-18 16:01:43.509777+00	5	Jonah Matthews	2	[{"changed": {"fields": ["First name", "Last name", "Email address"]}}]	14	1
+11	2022-08-18 16:02:42.795883+00	1	FirstClass	1	[{"added": {}}]	15	1
 \.
 
 
@@ -793,6 +843,7 @@ COPY public.django_content_type (id, app_label, model) FROM stdin;
 13	account	emailconfirmation
 14	users	user
 15	english	class
+16	english	lessons
 \.
 
 
@@ -801,35 +852,35 @@ COPY public.django_content_type (id, app_label, model) FROM stdin;
 --
 
 COPY public.django_migrations (id, app, name, applied) FROM stdin;
-1	contenttypes	0001_initial	2022-05-23 20:46:00.734099+00
-2	contenttypes	0002_remove_content_type_name	2022-05-23 20:46:00.768098+00
-3	auth	0001_initial	2022-05-23 20:46:00.82894+00
-4	auth	0002_alter_permission_name_max_length	2022-05-23 20:46:00.846379+00
-5	auth	0003_alter_user_email_max_length	2022-05-23 20:46:00.864936+00
-6	auth	0004_alter_user_username_opts	2022-05-23 20:46:00.875924+00
-7	auth	0005_alter_user_last_login_null	2022-05-23 20:46:00.883604+00
-8	auth	0006_require_contenttypes_0002	2022-05-23 20:46:00.886665+00
-9	auth	0007_alter_validators_add_error_messages	2022-05-23 20:46:00.893353+00
-10	auth	0008_alter_user_username_max_length	2022-05-23 20:46:00.899907+00
-11	auth	0009_alter_user_last_name_max_length	2022-05-23 20:46:00.906383+00
-12	auth	0010_alter_group_name_max_length	2022-05-23 20:46:00.912811+00
-13	auth	0011_update_proxy_permissions	2022-05-23 20:46:00.921135+00
-14	auth	0012_alter_user_first_name_max_length	2022-05-23 20:46:00.926805+00
-15	users	0001_initial	2022-05-23 20:46:00.981386+00
-16	account	0001_initial	2022-05-23 20:46:01.026566+00
-17	account	0002_email_max_length	2022-05-23 20:46:01.056171+00
-18	account	0003_auto_20220523_2046	2022-05-23 20:46:01.145552+00
-19	admin	0001_initial	2022-05-23 20:46:01.189691+00
-20	admin	0002_logentry_remove_auto_add	2022-05-23 20:46:01.206003+00
-21	admin	0003_logentry_add_action_flag_choices	2022-05-23 20:46:01.220541+00
-22	authtoken	0001_initial	2022-05-23 20:46:01.242157+00
-23	authtoken	0002_auto_20160226_1747	2022-05-23 20:46:01.271031+00
-24	authtoken	0003_tokenproxy	2022-05-23 20:46:01.275486+00
-25	sessions	0001_initial	2022-05-23 20:46:01.294597+00
-26	sites	0001_initial	2022-05-23 20:46:01.311562+00
-27	sites	0002_alter_domain_unique	2022-05-23 20:46:01.332431+00
-28	english	0001_initial	2022-06-07 21:16:15.327426+00
-29	users	0002_alter_user_avatar	2022-06-07 21:16:15.350172+00
+1	contenttypes	0001_initial	2022-08-18 15:55:53.218224+00
+2	contenttypes	0002_remove_content_type_name	2022-08-18 15:55:53.237209+00
+3	auth	0001_initial	2022-08-18 15:55:53.279641+00
+4	auth	0002_alter_permission_name_max_length	2022-08-18 15:55:53.284465+00
+5	auth	0003_alter_user_email_max_length	2022-08-18 15:55:53.289691+00
+6	auth	0004_alter_user_username_opts	2022-08-18 15:55:53.29504+00
+7	auth	0005_alter_user_last_login_null	2022-08-18 15:55:53.301657+00
+8	auth	0006_require_contenttypes_0002	2022-08-18 15:55:53.303727+00
+9	auth	0007_alter_validators_add_error_messages	2022-08-18 15:55:53.309029+00
+10	auth	0008_alter_user_username_max_length	2022-08-18 15:55:53.313911+00
+11	auth	0009_alter_user_last_name_max_length	2022-08-18 15:55:53.319541+00
+12	auth	0010_alter_group_name_max_length	2022-08-18 15:55:53.324805+00
+13	auth	0011_update_proxy_permissions	2022-08-18 15:55:53.331563+00
+14	auth	0012_alter_user_first_name_max_length	2022-08-18 15:55:53.343349+00
+15	users	0001_initial	2022-08-18 15:55:53.407094+00
+16	account	0001_initial	2022-08-18 15:55:53.45448+00
+17	account	0002_email_max_length	2022-08-18 15:55:53.462118+00
+18	account	0003_auto_20220818_1555	2022-08-18 15:55:53.513069+00
+19	admin	0001_initial	2022-08-18 15:55:53.53638+00
+20	admin	0002_logentry_remove_auto_add	2022-08-18 15:55:53.543678+00
+21	admin	0003_logentry_add_action_flag_choices	2022-08-18 15:55:53.551246+00
+22	authtoken	0001_initial	2022-08-18 15:55:53.574168+00
+23	authtoken	0002_auto_20160226_1747	2022-08-18 15:55:53.609043+00
+24	authtoken	0003_tokenproxy	2022-08-18 15:55:53.612286+00
+25	english	0001_initial	2022-08-18 15:55:53.667796+00
+26	sessions	0001_initial	2022-08-18 15:55:53.687238+00
+27	sites	0001_initial	2022-08-18 15:55:53.702869+00
+28	sites	0002_alter_domain_unique	2022-08-18 15:55:53.721519+00
+29	users	0002_user__role	2022-08-18 15:55:53.764625+00
 \.
 
 
@@ -838,8 +889,7 @@ COPY public.django_migrations (id, app, name, applied) FROM stdin;
 --
 
 COPY public.django_session (session_key, session_data, expire_date) FROM stdin;
-pdvymj8mpja3vftchqx96kcayehl3ql3	.eJxVjEEOwiAQRe_C2hAGp7W4dN8zEGbKSNVAUtqV8e7SpAvdvv_efysftjX5rcbFz5O6KlCnX0aBnzHvw_QI-V40l7wuM-ld0cda9Vim-Lod7t9BCjW12rGRThAZCXvoKUS20CDSgGAJwVm2A8NFsEMJYs3ZoYlCbFpIoD5f3M43tQ:1ntF0c:JihEvuNCCj2ReEnJDeSKa9pt4m6giFR1UVZ4bI8c2OQ	2022-06-06 20:50:34.841981+00
-ntkhjuxr67h2v6q4bbco4whgme1ksc9b	.eJxVjEEOwiAQRe_C2hAGp7W4dN8zEGbKSNVAUtqV8e7SpAvdvv_efysftjX5rcbFz5O6KlCnX0aBnzHvw_QI-V40l7wuM-ld0cda9Vim-Lod7t9BCjW12rGRThAZCXvoKUS20CDSgGAJwVm2A8NFsEMJYs3ZoYlCbFpIoD5f3M43tQ:1nygZ7:rSMGQ6mDS1K-6jb9lDhm99Bl3nyaViYQbZv2L2Xy6Bw	2022-06-21 21:16:41.729479+00
+x44qzxa73m7xiy9mo3ccbrj516tbffxn	.eJxVjMEOwiAQRP-FsyELBRc8eu83kAVWqRpISnsy_rtt0oPeJvPezFsEWpcS1s5zmLK4CCVOv12k9OS6g_ygem8ytbrMU5S7Ig_a5dgyv66H-3dQqJdtbS2QR6fMMGTURGiSs4AKkkPWUXvrvcnA7kxbYmD2ClEpsIO5OYvi8wWqrDY8:1oOhv9:5IT36m7ZWwN2Ru3PWgEINDY8U6Y8mA5gnOOeIHQDDvQ	2022-09-01 15:58:59.796079+00
 \.
 
 
@@ -856,10 +906,8 @@ COPY public.django_site (id, domain, name) FROM stdin;
 -- Data for Name: english_class; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.english_class (id, name, teacher_id) FROM stdin;
-1	FirstClass	5
-2	SecondClass	1
-3	ThirdClass	3
+COPY public.english_class (id, name, days, start_time, end_time, teacher_id) FROM stdin;
+1	FirstClass	{0,2,4}	18:00:00	19:30:00	2
 \.
 
 
@@ -869,17 +917,17 @@ COPY public.english_class (id, name, teacher_id) FROM stdin;
 
 COPY public.english_class_students (id, class_id, user_id) FROM stdin;
 1	1	1
-2	1	2
-3	1	3
-4	1	4
-5	2	2
-6	2	3
-7	2	4
-8	2	5
-9	3	1
-10	3	2
-11	3	4
-12	3	5
+2	1	3
+3	1	4
+4	1	5
+\.
+
+
+--
+-- Data for Name: english_lessons; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.english_lessons (id, _status, time_start, time_end, class_name_id) FROM stdin;
 \.
 
 
@@ -887,12 +935,12 @@ COPY public.english_class_students (id, class_id, user_id) FROM stdin;
 -- Data for Name: users_user; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.users_user (id, password, last_login, is_superuser, username, first_name, last_name, email, is_staff, is_active, date_joined, avatar) FROM stdin;
-1	pbkdf2_sha256$260000$LoCmV8TZK5bCbsjEQQFFKL$8EQGnGqf/OU1w0/1CPvf9TGJNsoSAw00dkh0WqBakHg=	2022-06-07 21:16:41+00	t	maksim	Maksim	Lukash	maksim@gmail.com	t	t	2022-05-23 20:46:53+00	
-2	pbkdf2_sha256$260000$VrcgBoxZ6n5EmM0lRofYVY$uKLSRlZDzjsZ1yOK7NH+FnvM7uoG0Cf8+cCM4w1ArMc=	2022-05-23 20:48:23+00	f	testuser1	Matthew	Becher	testuser1@gmail.com	f	t	2022-05-23 20:48:23+00	
-3	pbkdf2_sha256$260000$eZoDLws7aKYVvMIh6O11Fm$Yoj9RIo+QfO4MCt7TDCMmWibKqT0LRo3STBcU8tthvI=	2022-05-23 20:49:20+00	f	testuser2	Ayden	Henris	testuser2@gmail.com	f	t	2022-05-23 20:49:20+00	
-4	pbkdf2_sha256$260000$TI1pkm8afCL5oGJLzQ9Pvy$2/cOG4lFiU9nhd+VjSaCb0L26s2dqkZLIt7Ux0p6MMk=	2022-05-23 20:49:44+00	f	testuser3	Brody	Nelson	testuser3@gmail.com	f	t	2022-05-23 20:49:43+00	
-5	pbkdf2_sha256$260000$5RfwDdanlb8UOYwlQ6ge0q$hkjVh+a0oRQtaPKJWK2jBhr4xk/htv7frNuM5XsCO7w=	2022-05-23 20:50:05+00	f	testuser4	Damian	Ward	testuser4@gmail.com	f	t	2022-05-23 20:50:05+00	
+COPY public.users_user (id, password, last_login, is_superuser, username, first_name, last_name, email, is_staff, is_active, date_joined, avatar, _role) FROM stdin;
+1	pbkdf2_sha256$260000$Mr2k58tIQnJB4fVA1hJAb4$j1+wlurdlPL9Fz+3i5Ig8WYBNB7VCzSVymteFwE2xe0=	2022-08-18 15:58:59+00	t	maksim	Maksim	Lukash	maksim@gmail.com	t	t	2022-08-18 15:58:45+00		EMPLOYEE
+3	pbkdf2_sha256$260000$DTkemDievHQwcGk1Zy5BxY$yhuXcSrKWMhxDyt1uL8IrXbILdIF3g8woSQdLhuCYM8=	\N	f	testuser2	Ayden	Henris	testuser2@gmail.com	f	t	2022-08-18 16:00:37+00		EMPLOYEE
+2	pbkdf2_sha256$260000$ngGisoN8FddJDaRM30gQF8$qXaU8jjeaoqGxtlRgZhEOwQtuLvE4Hbnx1K+2CAXpP8=	\N	f	testuser	Matthew	Becher	testuser@gmail.com	f	t	2022-08-18 16:00:05+00		TEACHER
+4	pbkdf2_sha256$260000$gFxgApLtnpsv0f22qkQZbZ$dX6rXuLI48ieFMN4vS3F+eZxEy8qnY01la5XeRWjbuM=	\N	f	testuser3	Damian	Ward	testuser3@gmail.com	f	t	2022-08-18 16:01:11+00		EMPLOYEE
+5	pbkdf2_sha256$260000$DQe6gOgusnqxD2GMjoOTSz$DPplb+yYpdEjqk1QSPv9Hcc7ofT9SooHuEu5RuIrRLQ=	\N	f	testuser4	Jonah	Matthews	testuser4@gmail.com	f	t	2022-08-18 16:01:31+00		EMPLOYEE
 \.
 
 
@@ -916,7 +964,7 @@ COPY public.users_user_user_permissions (id, user_id, permission_id) FROM stdin;
 -- Name: account_emailaddress_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.account_emailaddress_id_seq', 4, true);
+SELECT pg_catalog.setval('public.account_emailaddress_id_seq', 1, false);
 
 
 --
@@ -944,21 +992,21 @@ SELECT pg_catalog.setval('public.auth_group_permissions_id_seq', 1, false);
 -- Name: auth_permission_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.auth_permission_id_seq', 60, true);
+SELECT pg_catalog.setval('public.auth_permission_id_seq', 64, true);
 
 
 --
 -- Name: django_admin_log_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.django_admin_log_id_seq', 8, true);
+SELECT pg_catalog.setval('public.django_admin_log_id_seq', 11, true);
 
 
 --
 -- Name: django_content_type_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.django_content_type_id_seq', 15, true);
+SELECT pg_catalog.setval('public.django_content_type_id_seq', 16, true);
 
 
 --
@@ -979,14 +1027,21 @@ SELECT pg_catalog.setval('public.django_site_id_seq', 1, true);
 -- Name: english_class_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.english_class_id_seq', 3, true);
+SELECT pg_catalog.setval('public.english_class_id_seq', 1, true);
 
 
 --
 -- Name: english_class_students_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.english_class_students_id_seq', 12, true);
+SELECT pg_catalog.setval('public.english_class_students_id_seq', 4, true);
+
+
+--
+-- Name: english_lessons_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.english_lessons_id_seq', 1, false);
 
 
 --
@@ -1163,6 +1218,14 @@ ALTER TABLE ONLY public.django_site
 
 
 --
+-- Name: english_class english_class_name_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.english_class
+    ADD CONSTRAINT english_class_name_key UNIQUE (name);
+
+
+--
 -- Name: english_class english_class_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1184,6 +1247,14 @@ ALTER TABLE ONLY public.english_class_students
 
 ALTER TABLE ONLY public.english_class_students
     ADD CONSTRAINT english_class_students_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: english_lessons english_lessons_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.english_lessons
+    ADD CONSTRAINT english_lessons_pkey PRIMARY KEY (id);
 
 
 --
@@ -1333,13 +1404,6 @@ CREATE INDEX django_site_domain_a2e37b91_like ON public.django_site USING btree 
 
 
 --
--- Name: english_class_name_0af3eaed; Type: INDEX; Schema: public; Owner: postgres
---
-
-CREATE INDEX english_class_name_0af3eaed ON public.english_class USING btree (name);
-
-
---
 -- Name: english_class_name_0af3eaed_like; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -1365,6 +1429,13 @@ CREATE INDEX english_class_students_user_id_4e6dcc3b ON public.english_class_stu
 --
 
 CREATE INDEX english_class_teacher_id_f6d3e167 ON public.english_class USING btree (teacher_id);
+
+
+--
+-- Name: english_lessons_class_name_id_2be1d2fc; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX english_lessons_class_name_id_2be1d2fc ON public.english_lessons USING btree (class_name_id);
 
 
 --
@@ -1488,6 +1559,14 @@ ALTER TABLE ONLY public.english_class_students
 
 ALTER TABLE ONLY public.english_class
     ADD CONSTRAINT english_class_teacher_id_f6d3e167_fk_users_user_id FOREIGN KEY (teacher_id) REFERENCES public.users_user(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: english_lessons english_lessons_class_name_id_2be1d2fc_fk_english_class_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.english_lessons
+    ADD CONSTRAINT english_lessons_class_name_id_2be1d2fc_fk_english_class_id FOREIGN KEY (class_name_id) REFERENCES public.english_class(id) DEFERRABLE INITIALLY DEFERRED;
 
 
 --

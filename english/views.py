@@ -1,9 +1,21 @@
-from rest_framework.generics import ListAPIView
-from .serializers import ClassSerializer, LessonsSerializer
 from .models import Class, Lessons
-from rest_framework.permissions import IsAuthenticated
 from django_filters.rest_framework import DjangoFilterBackend
 from english.permissions import IsTeacher, IsEmployee
+from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.generics import (
+    ListAPIView,
+    ListCreateAPIView,
+    UpdateAPIView,
+    RetrieveUpdateDestroyAPIView,
+    RetrieveUpdateAPIView,
+    DestroyAPIView
+)
+from .serializers import (
+    ClassSerializer,
+    LessonsSerializer,
+)
 
 
 class ClassListAPIView(ListAPIView):
@@ -14,7 +26,27 @@ class ClassListAPIView(ListAPIView):
     filterset_fields = ['name', 'teacher', 'students']
 
 
-class CurrentClassesForStudentListAPIView(ListAPIView):
+class JoinToClassUpdateDestroyAPIView(UpdateAPIView, DestroyAPIView):
+    queryset = Class.objects.all()
+    serializer_class = ClassSerializer
+    permission_classes = [IsAuthenticated]
+
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        instance.students.add(self.request.user)
+        instance.save()
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def delete(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if instance.students.filter(id=self.request.user.id).exists():
+            instance.students.remove(self.request.user)
+            instance.save()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class ClassesForStudentListAPIView(ListAPIView):
     queryset = Class.objects.all()
     serializer_class = ClassSerializer
     permission_classes = [IsAuthenticated, IsEmployee]
@@ -23,16 +55,7 @@ class CurrentClassesForStudentListAPIView(ListAPIView):
         return super().get_queryset().filter(students=self.request.user)
 
 
-class CurrentClassesForTeacherListAPIView(ListAPIView):
-    queryset = Class.objects.all()
-    serializer_class = ClassSerializer
-    permission_classes = [IsAuthenticated, IsTeacher]
-
-    def get_queryset(self):
-        return super().get_queryset().filter(teacher=self.request.user)
-
-
-class CurrentLessonsForStudentListAPIView(ListAPIView):
+class LessonsForStudentListAPIView(ListAPIView):
     queryset = Lessons.objects.all()
     serializer_class = LessonsSerializer
     permission_classes = [IsAuthenticated, IsEmployee]
@@ -43,7 +66,25 @@ class CurrentLessonsForStudentListAPIView(ListAPIView):
         return super().get_queryset().filter(class_name__students=self.request.user.pk, _status__in=[Lessons.COMING_SOON, Lessons.IN_PROGRESS])
 
 
-class CurrentLessonsForTeacherListAPIView(ListAPIView):
+class ClassesForTeacherListCreateAPIView(ListCreateAPIView):
+    queryset = Class.objects.all()
+    serializer_class = ClassSerializer
+    permission_classes = [IsAuthenticated, IsTeacher]
+
+    def get_queryset(self):
+        return super().get_queryset().filter(teacher=self.request.user)
+
+
+class ClassForTeacherRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
+    queryset = Class.objects.all()
+    serializer_class = ClassSerializer
+    permission_classes = [IsAuthenticated, IsTeacher]
+
+    def get_queryset(self):
+        return super().get_queryset().filter(teacher=self.request.user)
+
+
+class LessonsForTeacherListCreateAPIView(ListCreateAPIView):
     queryset = Lessons.objects.all()
     serializer_class = LessonsSerializer
     permission_classes = [IsAuthenticated, IsTeacher]
@@ -52,3 +93,12 @@ class CurrentLessonsForTeacherListAPIView(ListAPIView):
 
     def get_queryset(self):
         return super().get_queryset().filter(class_name__teacher=self.request.user.pk, _status__in=[Lessons.COMING_SOON, Lessons.IN_PROGRESS])
+
+
+class LessonForTeacherRetrieveUpdateAPIView(RetrieveUpdateAPIView):
+    queryset = Lessons.objects.all()
+    serializer_class = LessonsSerializer
+    permission_classes = [IsAuthenticated, IsTeacher]
+
+    def get_queryset(self):
+        return super().get_queryset().filter(class_name__teacher=self.request.user.pk, _status=Lessons.COMING_SOON)

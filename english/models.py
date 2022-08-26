@@ -12,40 +12,6 @@ import logging
 logger = logging.getLogger('django')
 
 
-class Class(models.Model):
-    name = models.CharField(max_length=150, db_index=True, unique=True)
-    students = models.ManyToManyField(User, related_name="student_classes")
-    teacher = models.ForeignKey(User, on_delete=models.CASCADE, related_name="teacher_classes")
-
-    class Meta:
-        verbose_name_plural = "Class"
-
-    def __str__(self):
-        return self.name
-
-    def create_lessons(self):
-        selected_schedule = self.schedule
-        last_lesson = self.lessons.filter(class_name=selected_schedule.class_name).order_by("-time_end").first()
-        date_from = last_lesson.time_end if last_lesson else datetime.now()
-        date_end = datetime.now() + timedelta(weeks=4)
-        if date_end.date() <= date_from.date():
-            return
-
-        lessons_to_create = list()
-        scheduled_days = selected_schedule.days
-        for day in range(1, (date_end - date_from).days + 1):
-            date = date_from + timedelta(days=day)
-            if date.weekday() in scheduled_days:
-                lessons_to_create.append(Lessons(
-                    class_name=self,
-                    time_start=datetime.combine(date=date, time=selected_schedule.start_time),
-                    time_end=datetime.combine(date=date, time=selected_schedule.end_time),
-                ))
-        if len(lessons_to_create) > 0:
-            logger.info(f"Created {len(lessons_to_create)} lessons for {self} class.")
-            return Lessons.objects.bulk_create(lessons_to_create)
-
-
 class ChoiceArrayField(ArrayField):
     def formfield(self, **kwargs):
         defaults = {
@@ -63,7 +29,7 @@ class ChoiceArrayField(ArrayField):
         return value
 
 
-class Schedule(models.Model):
+class Class(models.Model):
     week_days = [
         (0, _("Monday")),
         (1, _("Tuesday")),
@@ -74,16 +40,41 @@ class Schedule(models.Model):
         (6, _("Sunday")),
     ]
 
-    class_name = models.OneToOneField(Class, on_delete=models.CASCADE, verbose_name="Class name", related_name="schedule")
+    name = models.CharField(max_length=150, db_index=True, unique=True)
+    students = models.ManyToManyField(User, related_name="student_classes")
+    teacher = models.ForeignKey(User, on_delete=models.CASCADE, related_name="teacher_classes")
     days = ChoiceArrayField(base_field=models.IntegerField(choices=week_days), default=list, size=5, blank=True)
     start_time = models.TimeField(auto_now=False, auto_now_add=False)
     end_time = models.TimeField(auto_now=False, auto_now_add=False)
 
     class Meta:
-        verbose_name_plural = "Schedule"
+        verbose_name_plural = "Class"
 
     def __str__(self):
-        return self.class_name.name
+        return self.name
+
+    def create_lessons(self):
+        logger.info(f"Checking lessons for {self} class and starting to create new.")
+        last_lesson = self.lessons.all().order_by("-end_time").first()
+        date_from = last_lesson.end_time if last_lesson else datetime.now()
+        date_end = datetime.now() + timedelta(weeks=4)
+        if date_end.date() <= date_from.date():
+            return
+
+        lessons_to_create = list()
+        for day in range(1, (date_end - date_from).days + 1):
+            date = date_from + timedelta(days=day)
+            if date.weekday() in self.days:
+                lessons_to_create.append(Lessons(
+                    class_name=self,
+                    start_time=datetime.combine(date=date, time=self.start_time),
+                    end_time=datetime.combine(date=date, time=self.end_time),
+                ))
+        if len(lessons_to_create) > 0:
+            Lessons.objects.bulk_create(lessons_to_create)
+            logger.warning(f"Created {len(lessons_to_create)} lessons for {self} class.")
+        else:
+            logger.warning(f"Lessons for {self} class have already been created. Nothing has changed.")
 
 
 class Lessons(models.Model):
@@ -101,12 +92,12 @@ class Lessons(models.Model):
 
     class_name = models.ForeignKey(Class, on_delete=models.CASCADE, verbose_name="class_name", related_name="lessons")
     _status = models.CharField(max_length=15, choices=status_choice, default=COMING_SOON)
-    time_start = models.DateTimeField()
-    time_end = models.DateTimeField()
+    start_time = models.DateTimeField()
+    end_time = models.DateTimeField()
 
     class Meta:
         verbose_name_plural = "Lessons"
-        ordering = ['time_start']
+        ordering = ['start_time']
 
     @property
     def status(self):
@@ -128,31 +119,31 @@ class Lessons(models.Model):
             raise ValidationError("Wrong status.. Please, set allowed status")
 
     def set_status_coming(self):
-        if self.time_start > datetime.now():
+        if self.start_time > datetime.now():
             self._status = Lessons.COMING_SOON
-        elif self.time_end > datetime.now() >= self.time_start:
+        elif self.end_time > datetime.now() >= self.start_time:
             self.error_message(failed_status=Lessons.COMING_SOON, reason="going now")
-        elif self.time_end <= datetime.now():
+        elif self.end_time <= datetime.now():
             self.error_message(failed_status=Lessons.COMING_SOON, reason="already ended")
 
     def set_status_progress(self):
-        if self.time_end > datetime.now() >= self.time_start:
+        if self.end_time > datetime.now() >= self.start_time:
             self._status = Lessons.IN_PROGRESS
-        elif self.time_start > datetime.now():
+        elif self.start_time > datetime.now():
             self.error_message(failed_status=Lessons.IN_PROGRESS, reason="haven't started")
-        elif self.time_end <= datetime.now():
+        elif self.end_time <= datetime.now():
             self.error_message(failed_status=Lessons.IN_PROGRESS, reason="already ended")
 
     def set_status_done(self):
-        if self.time_end <= datetime.now():
+        if self.end_time <= datetime.now():
             self._status = Lessons.DONE
-        elif self.time_start > datetime.now():
+        elif self.start_time > datetime.now():
             self.error_message(failed_status=Lessons.DONE, reason="haven't started")
-        elif self.time_end > datetime.now() >= self.time_start:
+        elif self.end_time > datetime.now() >= self.start_time:
             self.error_message(failed_status=Lessons.DONE, reason="going now")
 
     def set_status_canceled(self):
-        if self._status != Lessons.DONE or self.time_end <= datetime.now():
+        if self._status != Lessons.DONE or self.end_time <= datetime.now():
             self._status = Lessons.CANCELED
         else:
             self.error_message(failed_status=Lessons.CANCELED, reason="already ended")

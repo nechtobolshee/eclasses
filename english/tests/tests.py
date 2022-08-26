@@ -1,30 +1,34 @@
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
-
+from english.models import Class, Lessons
 from users.models import User
 
 
-class ClassesListTest(APITestCase):
+class ClassesForStudent(APITestCase):
     fixtures = [
         "english/tests/fixtures.json",
     ]
 
     def setUp(self):
-        self.testUser = User.objects.get(id=1)
-        self.client.force_login(user=self.testUser)
+        self.student = User.objects.get(id=1)
+        self.teacher = User.objects.get(id=2)
 
     def test_get_classes_list(self):
+        self.client.force_login(user=self.student)
         expected_data = {
             "pk": 1,
             "name": "FirstClass",
             "students": [
-                {"pk": 2, "first_name": "Matthew", "last_name": "Becher"},
                 {"pk": 3, "first_name": "Ayden", "last_name": "Henris"},
-                {"pk": 4, "first_name": "Brody", "last_name": "Nelson"},
-                {"pk": 1, "first_name": "Maksim", "last_name": "Lukash"},
+                {"pk": 4, "first_name": "Damian", "last_name": "Ward"},
+                {"pk": 5, "first_name": "Jonah", "last_name": "Matthews"},
+                {"pk": 1, "first_name": "Maksim", "last_name": "Lukash"}
             ],
-            "teacher": {"pk": 5, "first_name": "Damian", "last_name": "Ward"},
+            "teacher": {"pk": 2, "first_name": "Matthew", "last_name": "Becher"},
+            "days": ["Monday", "Wednesday", "Friday"],
+            "start_time": "18:00:00",
+            "end_time": "19:30:00"
         }
         url = reverse("classes-list")
         response = self.client.get(url)
@@ -32,94 +36,466 @@ class ClassesListTest(APITestCase):
         self.assertEqual(len(response.data), 3)
         self.assertDictEqual(dict(response.data[0]), expected_data)
 
-    def test_get_classes_for_current_student(self):
+    def test_get_classes_success(self):
+        self.client.force_login(user=self.student)
         expected_data = {
             "pk": 1,
             "name": "FirstClass",
             "students": [
-                {"pk": 2, "first_name": "Matthew", "last_name": "Becher"},
                 {"pk": 3, "first_name": "Ayden", "last_name": "Henris"},
-                {"pk": 4, "first_name": "Brody", "last_name": "Nelson"},
-                {"pk": 1, "first_name": "Maksim", "last_name": "Lukash"},
+                {"pk": 4, "first_name": "Damian", "last_name": "Ward"},
+                {"pk": 5, "first_name": "Jonah", "last_name": "Matthews"},
+                {"pk": 1, "first_name": "Maksim", "last_name": "Lukash"}
             ],
-            "teacher": {"pk": 5, "first_name": "Damian", "last_name": "Ward"},
+            "teacher": {"pk": 2, "first_name": "Matthew", "last_name": "Becher"},
+            "days": ["Monday", "Wednesday", "Friday"],
+            "start_time": "18:00:00",
+            "end_time": "19:30:00"
         }
-        url = reverse("student-classes")
+        url = reverse("student-classes-list")
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 2)
         self.assertDictEqual(dict(response.data[0]), expected_data)
 
-    def test_get_classes_for_current_teacher(self):
-        expected_data = {
-            "pk": 2,
-            "name": "SecondClass",
-            "students": [
-                {"pk": 2, "first_name": "Matthew", "last_name": "Becher"},
-                {"pk": 3, "first_name": "Ayden", "last_name": "Henris"},
-                {"pk": 4, "first_name": "Brody", "last_name": "Nelson"},
-                {"pk": 5, "first_name": "Damian", "last_name": "Ward"},
-            ],
-            "teacher": {"pk": 1, "first_name": "Maksim", "last_name": "Lukash"},
-        }
-        url = reverse("teacher-classes")
+    def test_get_classes_failed(self):
+        self.client.force_login(user=self.teacher)
+        url = reverse("student-classes-list")
         response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_leave_class(self):
+        self.client.force_login(user=self.student)
+
+        self.assertIn(self.student, Class.objects.get(pk=1).students.all())
+
+        url = reverse("join-to-class", kwargs={"pk": 1})
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+        self.assertNotIn(self.student, Class.objects.get(pk=1).students.all())
+
+    def test_join_class(self):
+        self.client.force_login(user=self.student)
+        data = {"pk": 1, "first_name": "Maksim", "last_name": "Lukash"}
+
+        self.assertNotIn(self.student, Class.objects.get(pk=3).students.all())
+
+        url = reverse("join-to-class", kwargs={"pk": 3})
+        response = self.client.patch(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 1)
-        self.assertDictEqual(dict(response.data[0]), expected_data)
+        self.assertIn(data, response.data["students"])
 
-    def test_search_classes_with_filters(self):
-        expected_data = {
-            "pk": 3,
-            "name": "ThirdClass",
-            "students": [
-                {"pk": 2, "first_name": "Matthew", "last_name": "Becher"},
-                {"pk": 4, "first_name": "Brody", "last_name": "Nelson"},
-                {"pk": 5, "first_name": "Damian", "last_name": "Ward"},
-                {"pk": 1, "first_name": "Maksim", "last_name": "Lukash"},
-            ],
-            "teacher": {"pk": 3, "first_name": "Ayden", "last_name": "Henris"},
-        }
-        url = f'{reverse("classes-list")}?name=&teacher=3&students=5'
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 1)
-        self.assertDictEqual(dict(response.data[0]), expected_data)
+        self.assertIn(self.student, Class.objects.get(pk=3).students.all())
 
 
-class LessonsListTest(APITestCase):
+class ClassesForTeacher(APITestCase):
     fixtures = [
         "english/tests/fixtures.json",
     ]
 
     def setUp(self):
-        self.testUser = User.objects.get(id=1)
-        self.client.force_login(user=self.testUser)
+        self.student = User.objects.get(id=1)
+        self.teacher = User.objects.get(id=2)
 
-    def test_get_lessons_for_current_student(self):
+    def test_get_classes_success(self):
+        self.client.force_login(user=self.teacher)
         expected_data = {
             "pk": 1,
-            "class_name": 1,
-            "_status": "PROGRESS",
-            "time_start": "2022-07-04T01:14:43",
-            "time_end": "2022-07-30T01:14:46"
+            "name": "FirstClass",
+            "students": [
+                {"pk": 1, "first_name": "Maksim", "last_name": "Lukash"},
+                {"pk": 3, "first_name": "Ayden", "last_name": "Henris"},
+                {"pk": 4, "first_name": "Damian", "last_name": "Ward"},
+                {"pk": 5, "first_name": "Jonah", "last_name": "Matthews"}
+            ],
+            "teacher": {"pk": 2, "first_name": "Matthew", "last_name": "Becher"},
+            "days": ["Monday", "Wednesday", "Friday"],
+            "start_time": "18:00:00",
+            "end_time": "19:30:00"
         }
-        url = reverse("student-lessons")
+        url = reverse("teacher-classes-list-create")
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 1)
         self.assertDictEqual(dict(response.data[0]), expected_data)
 
-    def test_get_lessons_for_current_teacher(self):
+    def test_get_classes_failed(self):
+        self.client.force_login(user=self.student)
+        url = reverse("teacher-classes-list-create")
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_search_classes_success(self):
+        self.client.force_login(user=self.teacher)
         expected_data = {
-            "pk": 2,
-            "class_name": 2,
-            "_status": "PROGRESS",
-            "time_start": "2022-07-04T01:14:43",
-            "time_end": "2022-07-30T01:14:46"
+            "pk": 1,
+            "name": "FirstClass",
+            "students": [
+                {"pk": 1, "first_name": "Maksim", "last_name": "Lukash"},
+                {"pk": 3, "first_name": "Ayden", "last_name": "Henris"},
+                {"pk": 4, "first_name": "Damian", "last_name": "Ward"},
+                {"pk": 5, "first_name": "Jonah", "last_name": "Matthews"}
+            ],
+            "teacher": {"pk": 2, "first_name": "Matthew", "last_name": "Becher"},
+            "days": ["Monday", "Wednesday", "Friday"],
+            "start_time": "18:00:00",
+            "end_time": "19:30:00"
         }
-        url = reverse("teacher-lessons")
+        url = f'{reverse("classes-list")}?name=FirstClass&teacher=2&students=1'
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 1)
         self.assertDictEqual(dict(response.data[0]), expected_data)
+
+    def test_search_classes_success_empty_results(self):
+        self.client.force_login(user=self.teacher)
+        url = f'{reverse("classes-list")}?name=LostClass'
+        response = self.client.get(url)
+        self.assertEqual(len(response.data), 0)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_class_success(self):
+        self.client.force_login(user=self.teacher)
+        expected_data = {
+            "pk": 1,
+            "name": "FirstClass",
+            "students": [
+                {"pk": 1, "first_name": "Maksim", "last_name": "Lukash"},
+                {"pk": 3, "first_name": "Ayden", "last_name": "Henris"},
+                {"pk": 4, "first_name": "Damian", "last_name": "Ward"},
+                {"pk": 5, "first_name": "Jonah", "last_name": "Matthews"}
+            ],
+            "teacher": {"pk": 2, "first_name": "Matthew", "last_name": "Becher"},
+            "days": ["Monday", "Wednesday", "Friday"],
+            "start_time": "18:00:00",
+            "end_time": "19:30:00"
+        }
+        url = reverse("teacher-classes-retrive-update-destroy", kwargs={"pk": 1})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertDictEqual(dict(response.data), expected_data)
+
+    def test_get_class_failed(self):
+        self.client.force_login(user=self.student)
+        url = reverse("teacher-classes-retrive-update-destroy", kwargs={"pk": 1})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_update_class_success(self):
+        self.client.force_login(user=self.teacher)
+        data = {
+            "name": "UpdatedFirstClass",
+            "days": [1, 2],
+            "start_time": "20:00:00",
+            "end_time": "21:30:00"
+        }
+        expected_data = {
+            "pk": 1,
+            "name": "UpdatedFirstClass",
+            "students": [
+                {"pk": 1, "first_name": "Maksim", "last_name": "Lukash"},
+                {"pk": 3, "first_name": "Ayden", "last_name": "Henris"},
+                {"pk": 4, "first_name": "Damian", "last_name": "Ward"},
+                {"pk": 5, "first_name": "Jonah", "last_name": "Matthews"}
+            ],
+            "teacher": {"pk": 2, "first_name": "Matthew", "last_name": "Becher"},
+            "days": ["Tuesday", "Wednesday"],
+            "start_time": "20:00:00",
+            "end_time": "21:30:00"
+        }
+        url = reverse("teacher-classes-retrive-update-destroy", kwargs={"pk": 1})
+        response = self.client.patch(url, data=data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertDictEqual(dict(response.data), expected_data)
+
+    def test_update_class_failed_403(self):
+        self.client.force_login(user=self.student)
+        data = {
+            "name": "FailedUpdateFirstClass",
+            "days": [3, 5]
+        }
+        url = reverse("teacher-classes-retrive-update-destroy", kwargs={"pk": 1})
+        response = self.client.patch(url, data=data)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_update_class_failed_incorrect_time(self):
+        self.client.force_login(user=self.teacher)
+        data = {
+            "name": "FirstClass",
+            "start_time": "22:00:00",
+            "end_time": "20:00:00"
+        }
+        url = reverse("teacher-classes-retrive-update-destroy", kwargs={"pk": 1})
+        response = self.client.patch(url, data=data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("The start time can't be greater than the end time.", response.data["non_field_errors"])
+
+    def test_update_class_failed_unfilled_time(self):
+        self.client.force_login(user=self.teacher)
+        data = {
+            "name": "FirstClass",
+            "end_time": "20:00:00"
+        }
+        url = reverse("teacher-classes-retrive-update-destroy", kwargs={"pk": 1})
+        response = self.client.patch(url, data=data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("Please, fill in the start and end times.", response.data["non_field_errors"])
+
+    def test_delete_class_success(self):
+        self.client.force_login(user=self.teacher)
+
+        url = reverse("teacher-classes-retrive-update-destroy", kwargs={"pk": 1})
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+        self.assertFalse(Class.objects.filter(pk=1).exists())
+
+    def test_delete_class_failed(self):
+        self.client.force_login(user=self.student)
+        url = reverse("teacher-classes-retrive-update-destroy", kwargs={"pk": 1})
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_create_class_success(self):
+        self.client.force_login(user=self.teacher)
+        data = {
+            "name": "NewClass",
+            "students": [4, 5],
+            "days": [1, 2],
+            "start_time": "16:00:00",
+            "end_time": "18:00:00"
+        }
+        expected_data = {
+            "pk": 4,
+            "name": "NewClass",
+            "students": [
+                {"pk": 4, "first_name": "Damian", "last_name": "Ward"},
+                {"pk": 5, "first_name": "Jonah", "last_name": "Matthews"}
+            ],
+            "teacher": {"pk": 2, "first_name": "Matthew", "last_name": "Becher"},
+            "days": ["Tuesday", "Wednesday"],
+            "start_time": "16:00:00",
+            "end_time": "18:00:00"
+        }
+        url = reverse("teacher-classes-list-create")
+        response = self.client.post(url, data=data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(expected_data, response.data)
+
+    def test_create_class_failed_403(self):
+        self.client.force_login(user=self.student)
+        data = {
+            "name": "NewSecondClass",
+            "students": [4, 5],
+            "days": [1, 2],
+            "start_time": "16:00:00",
+            "end_time": "18:00:00"
+        }
+
+        url = reverse("teacher-classes-list-create")
+        response = self.client.post(url, data=data)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_create_class_failed_incorrect_time(self):
+        self.client.force_login(user=self.teacher)
+        data = {
+            "name": "NewSecondClass",
+            "students": [4, 5],
+            "days": [1, 2],
+            "start_time": "20:00:00",
+            "end_time": "18:00:00"
+        }
+        url = reverse("teacher-classes-list-create")
+        response = self.client.post(url, data=data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("The start time can't be greater than the end time.", response.data["non_field_errors"])
+
+
+class LessonsForStudent(APITestCase):
+    fixtures = [
+        "english/tests/fixtures.json",
+    ]
+
+    def setUp(self):
+        self.student = User.objects.get(id=1)
+        self.teacher = User.objects.get(id=2)
+
+    def test_get_lessons_success(self):
+        self.client.force_login(user=self.student)
+        expected_data = {
+            "pk": 1,
+            "class_name": "FirstClass",
+            "status": "COMING",
+            "start_time": "2030-07-04T01:14:43",
+            "end_time": "2030-10-30T01:14:46"
+        }
+        url = reverse("student-lessons-list")
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 2)
+        self.assertDictEqual(dict(response.data[0]), expected_data)
+
+    def test_get_lessons_failed(self):
+        self.client.force_login(user=self.teacher)
+        url = reverse("student-lessons-list")
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+
+class LessonsForTeacher(APITestCase):
+    fixtures = [
+        "english/tests/fixtures.json",
+    ]
+
+    def setUp(self):
+        self.student = User.objects.get(id=1)
+        self.teacher = User.objects.get(id=2)
+
+    def test_get_lessons_success(self):
+        self.client.force_login(user=self.teacher)
+        expected_data = {
+            "pk": 1,
+            "class_name": "FirstClass",
+            "status": "COMING",
+            "start_time": "2030-07-04T01:14:43",
+            "end_time": "2030-10-30T01:14:46"
+        }
+        url = reverse("teacher-lessons-list-create")
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 1)
+        self.assertDictEqual(dict(response.data[0]), expected_data)
+
+    def test_get_lessons_failed(self):
+        self.client.force_login(user=self.student)
+        url = reverse("teacher-lessons-list-create")
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_get_lesson_success(self):
+        self.client.force_login(user=self.teacher)
+        expected_data = {
+            "pk": 1,
+            "class_name": "FirstClass",
+            "status": "COMING",
+            "start_time": "2030-07-04T01:14:43",
+            "end_time": "2030-10-30T01:14:46"
+        }
+        url = reverse("teacher-lesson-retrive-update", kwargs={"pk": 1})
+        response = self.client.get(url)
+        self.assertDictEqual(dict(response.data), expected_data)
+
+    def test_get_lesson_failed(self):
+        self.client.force_login(user=self.student)
+        url = reverse("teacher-lesson-retrive-update", kwargs={"pk": 1})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_update_lesson_success(self):
+        self.client.force_login(user=self.teacher)
+        data = {
+            "status": "CANCELED",
+            "start_time": "2030-07-04T01:14:43",
+            "end_time": "2032-10-30T01:14:46"
+        }
+        expected_data = {
+            "pk": 1,
+            "class_name": "FirstClass",
+            "status": "CANCELED",
+            "start_time": "2030-07-04T01:14:43",
+            "end_time": "2032-10-30T01:14:46"
+        }
+        url = reverse("teacher-lesson-retrive-update", kwargs={"pk": 1})
+        response = self.client.patch(url, data=data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertDictEqual(dict(response.data), expected_data)
+
+    def test_update_lesson_failed_incorrect_time_1(self):
+        self.client.force_login(user=self.teacher)
+        data = {
+            "start_time": "2050-07-04T01:14:43",
+            "end_time": "2030-10-30T01:14:46"
+        }
+        url = reverse("teacher-lesson-retrive-update", kwargs={"pk": 1})
+        response = self.client.patch(url, data=data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual("The start time can't be greater than the end time.", response.data["detail"][0])
+
+    def test_update_lesson_failed_incorrect_time_2(self):
+        self.client.force_login(user=self.teacher)
+        data = {
+            "start_time": "2050-07-04T01:14:43"
+        }
+        url = reverse("teacher-lesson-retrive-update", kwargs={"pk": 1})
+        response = self.client.patch(url, data=data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual("Please, fill in the start and end times.", response.data["detail"][0])
+
+    def test_update_lesson_failed_403(self):
+        self.client.force_login(user=self.student)
+        data = {
+            "start_time": "2030-07-04T01:14:43",
+            "end_time": "2032-10-30T01:14:46"
+        }
+        url = reverse("teacher-lesson-retrive-update", kwargs={"pk": 1})
+        response = self.client.patch(url, data=data)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_update_lesson_failed_status(self):
+        self.client.force_login(user=self.teacher)
+        data = {
+            "status": "PROGRESS"
+        }
+        url = reverse("teacher-lesson-retrive-update", kwargs={"pk": 1})
+        response = self.client.patch(url, data=data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual("Lesson status can be changed only to CANCELED.", response.data["status"])
+
+    def test_create_lesson_success(self):
+        self.client.force_login(user=self.teacher)
+        data = {
+            "class_name": 1,
+            "status": "COMING",
+            "start_time": "2040-07-04T01:14:43",
+            "end_time": "2042-10-30T01:14:46"
+        }
+        url = reverse("teacher-lessons-list-create")
+        response = self.client.post(url, data=data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_create_lesson_failed_403(self):
+        self.client.force_login(user=self.student)
+        data = {
+            "class_name": 1,
+            "status": "COMING",
+            "start_time": "2040-07-04T01:14:43",
+            "end_time": "2042-10-30T01:14:46"
+        }
+        url = reverse("teacher-lessons-list-create")
+        response = self.client.post(url, data=data)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_create_lesson_failed_incorrect_time(self):
+        self.client.force_login(user=self.teacher)
+        data = {
+            "class_name": 1,
+            "status": "COMING",
+            "start_time": "2010-07-04T01:14:43",
+            "end_time": "2015-07-04T01:14:43",
+        }
+        url = reverse("teacher-lessons-list-create")
+        response = self.client.post(url, data=data)
+        self.assertEqual("Start time should be larger than current time.", response.data["start_time"][0])
+
+    def test_create_lesson_failed_incorrect_time_2(self):
+        self.client.force_login(user=self.teacher)
+        data = {
+            "class_name": 1,
+            "status": "COMING",
+            "start_time": "2040-07-04T01:14:43",
+            "end_time": "2030-07-04T01:14:43",
+        }
+        url = reverse("teacher-lessons-list-create")
+        response = self.client.post(url, data=data)
+        self.assertEqual("The start time can't be greater than the end time.", response.data["detail"][0])
