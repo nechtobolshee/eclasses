@@ -119,7 +119,7 @@
         "fields": {
             "name": "ThirdClass",
             "teacher": "5",
-            "students": ["1", "2", "3", "4"],
+            "students": ["2", "3", "4"],
             "days": [0, 2, 4],
             "start_time": "18:00:00",
             "end_time": "19:30:00"

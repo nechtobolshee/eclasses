@@ -1,7 +1,7 @@
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
-
+from english.models import Class, Lessons
 from users.models import User
 
 
@@ -55,7 +55,7 @@ class ClassesForStudent(APITestCase):
         url = reverse("student-classes-list")
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 3)
+        self.assertEqual(len(response.data), 2)
         self.assertDictEqual(dict(response.data[0]), expected_data)
 
     def test_get_classes_failed(self):
@@ -65,37 +65,28 @@ class ClassesForStudent(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_leave_class(self):
-        data = {"pk": 1, "first_name": "Maksim", "last_name": "Lukash"}
-
-        self.client.force_login(user=self.teacher)
-        url = reverse("teacher-classes-retrive-update-destroy", kwargs={"pk": 1})
-        response = self.client.get(url)
-        self.assertIn(data, response.data["students"])
-
         self.client.force_login(user=self.student)
+
+        self.assertIn(self.student, Class.objects.get(pk=1).students.all())
+
         url = reverse("join-to-class", kwargs={"pk": 1})
         response = self.client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
-        self.client.force_login(user=self.teacher)
-        url = reverse("teacher-classes-retrive-update-destroy", kwargs={"pk": 1})
-        response = self.client.get(url)
-        self.assertNotIn(data, response.data["students"])
+        self.assertNotIn(self.student, Class.objects.get(pk=1).students.all())
 
     def test_join_class(self):
         self.client.force_login(user=self.student)
         data = {"pk": 1, "first_name": "Maksim", "last_name": "Lukash"}
 
-        url = reverse("join-to-class", kwargs={"pk": 1})
-        self.client.delete(url)
-        url = f'{reverse("classes-list")}?name=FirstClass'
-        response = self.client.get(url)
-        self.assertNotIn(data, response.data[0]["students"])
+        self.assertNotIn(self.student, Class.objects.get(pk=3).students.all())
 
-        url = reverse("join-to-class", kwargs={"pk": 1})
+        url = reverse("join-to-class", kwargs={"pk": 3})
         response = self.client.patch(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn(data, response.data["students"])
+
+        self.assertIn(self.student, Class.objects.get(pk=3).students.all())
 
 
 class ClassesForTeacher(APITestCase):
@@ -253,12 +244,12 @@ class ClassesForTeacher(APITestCase):
 
     def test_delete_class_success(self):
         self.client.force_login(user=self.teacher)
+
         url = reverse("teacher-classes-retrive-update-destroy", kwargs={"pk": 1})
         response = self.client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertFalse(Class.objects.filter(pk=1).exists())
 
     def test_delete_class_failed(self):
         self.client.force_login(user=self.student)
@@ -275,9 +266,22 @@ class ClassesForTeacher(APITestCase):
             "start_time": "16:00:00",
             "end_time": "18:00:00"
         }
+        expected_data = {
+            "pk": 4,
+            "name": "NewClass",
+            "students": [
+                {"pk": 4, "first_name": "Damian", "last_name": "Ward"},
+                {"pk": 5, "first_name": "Jonah", "last_name": "Matthews"}
+            ],
+            "teacher": {"pk": 2, "first_name": "Matthew", "last_name": "Becher"},
+            "days": ["Tuesday", "Wednesday"],
+            "start_time": "16:00:00",
+            "end_time": "18:00:00"
+        }
         url = reverse("teacher-classes-list-create")
         response = self.client.post(url, data=data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(expected_data, response.data)
 
     def test_create_class_failed_403(self):
         self.client.force_login(user=self.student)
@@ -288,6 +292,7 @@ class ClassesForTeacher(APITestCase):
             "start_time": "16:00:00",
             "end_time": "18:00:00"
         }
+
         url = reverse("teacher-classes-list-create")
         response = self.client.post(url, data=data)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)

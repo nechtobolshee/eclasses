@@ -44,18 +44,4 @@ class Migration(migrations.Migration):
                 'ordering': ['time_start'],
             },
         ),
-        migrations.AlterModelOptions(
-            name='lessons',
-            options={'ordering': ['start_time'], 'verbose_name_plural': 'Lessons'},
-        ),
-        migrations.RenameField(
-            model_name='lessons',
-            old_name='time_end',
-            new_name='end_time',
-        ),
-        migrations.RenameField(
-            model_name='lessons',
-            old_name='time_start',
-            new_name='start_time',
-        ),
     ]
