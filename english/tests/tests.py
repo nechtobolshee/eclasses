@@ -1,7 +1,7 @@
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
-from english.models import Class, Lessons
+from english.models import Class
 from users.models import User
 
 

@@ -5,6 +5,7 @@ from django.utils.translation import gettext_lazy as _
 from django.core.exceptions import BadRequest, ValidationError
 from users.models import User
 from datetime import datetime, timedelta
+from calendar_management import create_calendar_event, update_calendar_event, delete_calendar_event
 import six
 import json
 import logging
@@ -92,6 +93,7 @@ class Lessons(models.Model):
 
     class_name = models.ForeignKey(Class, on_delete=models.CASCADE, verbose_name="class_name", related_name="lessons")
     _status = models.CharField(max_length=15, choices=status_choice, default=COMING_SOON)
+    google_event_id = models.CharField(max_length=150, blank=True, null=True)
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()
 
@@ -151,3 +153,17 @@ class Lessons(models.Model):
     def error_message(self, failed_status, reason):
         logger.warning(f"Tried to set {failed_status} status for {self.pk} lesson (event is {reason})")
         raise BadRequest(f"Can't set this {failed_status}, because this event is {reason}")
+
+    def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
+        if not self.pk:
+            self.google_event_id = create_calendar_event(event_name=self.class_name.name, start_time=self.start_time, end_time=self.end_time)
+        elif self.pk and self._status == self.CANCELED:
+            delete_calendar_event(event_id=self.google_event_id)
+        else:
+            update_calendar_event(event_id=self.google_event_id, start_time=self.start_time, end_time=self.end_time)
+
+        super(Lessons, self).save(force_insert, force_update, using, update_fields)
+
+    def delete(self, using=None, keep_parents=False):
+        delete_calendar_event(event_id=self.google_event_id)
+        super(Lessons, self).delete(using, keep_parents)
