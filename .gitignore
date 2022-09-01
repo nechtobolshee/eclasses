@@ -1,6 +1,6 @@
 # Credentials
-credentials.*
-token.*
+calendar_credentials.json
+calendar_token.pickle
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

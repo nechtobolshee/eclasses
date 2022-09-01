@@ -1,14 +1,14 @@
+import json
+import logging
+import six
+from datetime import datetime, timedelta
 from django.contrib.postgres.fields import ArrayField
+from django.core.exceptions import BadRequest, ValidationError
 from django.db import models
 from django.forms import MultipleChoiceField
 from django.utils.translation import gettext_lazy as _
-from django.core.exceptions import BadRequest, ValidationError
+from english import calendar
 from users.models import User
-from datetime import datetime, timedelta
-from calendar_management import create_calendar_event, update_calendar_event, delete_calendar_event
-import six
-import json
-import logging
 
 logger = logging.getLogger('django')
 
@@ -156,14 +156,15 @@ class Lessons(models.Model):
 
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
         if not self.pk:
-            self.google_event_id = create_calendar_event(event_name=self.class_name.name, start_time=self.start_time, end_time=self.end_time)
-        elif self.pk and self._status == self.CANCELED:
-            delete_calendar_event(event_id=self.google_event_id)
+            self.google_event_id = calendar.create_calendar_event(event_name=self.class_name.name, start_time=self.start_time, end_time=self.end_time)
+        elif self._status == self.CANCELED:
+            print(self.class_name.name)
+            calendar.delete_calendar_event(event_id=self.google_event_id)
         else:
-            update_calendar_event(event_id=self.google_event_id, start_time=self.start_time, end_time=self.end_time)
-
+            calendar.update_calendar_event(event_id=self.google_event_id, start_time=self.start_time, end_time=self.end_time)
         super(Lessons, self).save(force_insert, force_update, using, update_fields)
 
     def delete(self, using=None, keep_parents=False):
-        delete_calendar_event(event_id=self.google_event_id)
+        if self.google_event_id:
+            calendar.delete_calendar_event(event_id=self.google_event_id)
         super(Lessons, self).delete(using, keep_parents)

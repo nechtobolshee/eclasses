@@ -8,15 +8,15 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 
 SCOPES = ['https://www.googleapis.com/auth/calendar']
-CREDENTIALS_FILE = 'credentials.json'
+CREDENTIALS_FILE = 'english/calendar_credentials.json'
 logger = logging.getLogger('django')
 
 
 def get_calendar_service():
     creds = None
 
-    if os.path.exists('token.pickle'):
-        with open('token.pickle', 'rb') as token:
+    if os.path.exists('english/calendar_token.pickle'):
+        with open('english/calendar_token.pickle', 'rb') as token:
             creds = pickle.load(token)
 
     # If there are no (valid) credentials available, let the user log in.
@@ -28,7 +28,7 @@ def get_calendar_service():
             creds = flow.run_local_server(port=8050)
 
         # Save the credentials for the next run
-        with open('token.pickle', 'wb') as token:
+        with open('english/calendar_token.pickle', 'wb') as token:
             pickle.dump(creds, token)
 
     return build('calendar', 'v3', credentials=creds)
