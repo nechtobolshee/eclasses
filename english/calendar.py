@@ -14,9 +14,9 @@ class CalendarManager:
         self.SCOPES = ['https://www.googleapis.com/auth/calendar']
         self.CREDENTIALS_FILE = 'english/calendar_credentials.json'
         self.logger = logging.getLogger('django')
-        self.service = self.get_calendar_service()
+        self.service = self._get_calendar_service()
 
-    def get_calendar_service(self):
+    def _get_calendar_service(self):
         creds = None
 
         if os.path.exists('english/calendar_token.pickle'):
