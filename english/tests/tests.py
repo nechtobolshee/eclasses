@@ -3,12 +3,12 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 from english.models import Class, Lessons
 from users.models import User
+from english.calendar import CalendarManager
+from unittest.mock import patch
 
 
 class ClassesForStudent(APITestCase):
-    fixtures = [
-        "english/tests/fixtures.json",
-    ]
+    fixtures = ["english/tests/fixtures.json"]
 
     def setUp(self):
         self.student = User.objects.get(id=1)
@@ -90,9 +90,7 @@ class ClassesForStudent(APITestCase):
 
 
 class ClassesForTeacher(APITestCase):
-    fixtures = [
-        "english/tests/fixtures.json",
-    ]
+    fixtures = ["english/tests/fixtures.json"]
 
     def setUp(self):
         self.student = User.objects.get(id=1)
@@ -313,9 +311,7 @@ class ClassesForTeacher(APITestCase):
 
 
 class LessonsForStudent(APITestCase):
-    fixtures = [
-        "english/tests/fixtures.json",
-    ]
+    fixtures = ["english/tests/fixtures.json"]
 
     def setUp(self):
         self.student = User.objects.get(id=1)
@@ -344,9 +340,7 @@ class LessonsForStudent(APITestCase):
 
 
 class LessonsForTeacher(APITestCase):
-    fixtures = [
-        "english/tests/fixtures.json",
-    ]
+    fixtures = ["english/tests/fixtures.json"]
 
     def setUp(self):
         self.student = User.objects.get(id=1)
@@ -392,7 +386,28 @@ class LessonsForTeacher(APITestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
-    def test_update_lesson_success(self):
+    @patch.object(CalendarManager, 'update_event')
+    def test_update_lesson_success(self, mock_calendar_update):
+        self.client.force_login(user=self.teacher)
+        data = {
+            "start_time": "2035-07-04T01:14:43",
+            "end_time": "2036-10-30T01:14:46"
+        }
+        expected_data = {
+            "pk": 1,
+            "class_name": "FirstClass",
+            "status": "COMING",
+            "start_time": "2035-07-04T01:14:43",
+            "end_time": "2036-10-30T01:14:46"
+        }
+        url = reverse("teacher-lesson-retrive-update", kwargs={"pk": 1})
+        response = self.client.patch(url, data=data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertDictEqual(dict(response.data), expected_data)
+        mock_calendar_update.assert_called_once()
+
+    @patch.object(CalendarManager, 'delete_event')
+    def test_update_lesson_success_second(self, mock_calendar_delete):
         self.client.force_login(user=self.teacher)
         data = {
             "status": "CANCELED",
@@ -410,6 +425,7 @@ class LessonsForTeacher(APITestCase):
         response = self.client.patch(url, data=data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertDictEqual(dict(response.data), expected_data)
+        mock_calendar_delete.assert_called()
 
     def test_update_lesson_failed_incorrect_time_1(self):
         self.client.force_login(user=self.teacher)
@@ -452,7 +468,8 @@ class LessonsForTeacher(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual("Lesson status can be changed only to CANCELED.", response.data["status"])
 
-    def test_create_lesson_success(self):
+    @patch.object(CalendarManager, 'create_event', return_value="google_id")
+    def test_create_lesson_success(self, mock_calendar_insert):
         self.client.force_login(user=self.teacher)
         data = {
             "class_name": 1,
@@ -460,9 +477,21 @@ class LessonsForTeacher(APITestCase):
             "start_time": "2040-07-04T01:14:43",
             "end_time": "2042-10-30T01:14:46"
         }
+        expected_data = {
+            "pk": 3,
+            "class_name": "FirstClass",
+            "status": "COMING",
+            "start_time": "2040-07-04T01:14:43",
+            "end_time": "2042-10-30T01:14:46"
+        }
         url = reverse("teacher-lessons-list-create")
+
         response = self.client.post(url, data=data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(expected_data, response.data)
+        mock_calendar_insert.assert_called_once()
+        lesson = Lessons.objects.get(pk=response.data["pk"])
+        self.assertEqual(lesson.google_event_id, "google_id")
 
     def test_create_lesson_failed_403(self):
         self.client.force_login(user=self.student)
