@@ -7,7 +7,7 @@ from django.core.exceptions import BadRequest, ValidationError
 from django.db import models
 from django.forms import MultipleChoiceField
 from django.utils.translation import gettext_lazy as _
-from english import calendar
+from english.calendar import CalendarManager
 from users.models import User
 
 logger = logging.getLogger('django')
@@ -156,15 +156,14 @@ class Lessons(models.Model):
 
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
         if not self.pk:
-            self.google_event_id = calendar.create_calendar_event(event_name=self.class_name.name, start_time=self.start_time, end_time=self.end_time)
+            self.google_event_id = CalendarManager().create_event(event_name=self.class_name.name, start_time=self.start_time, end_time=self.end_time)
         elif self._status == self.CANCELED:
-            print(self.class_name.name)
-            calendar.delete_calendar_event(event_id=self.google_event_id)
+            CalendarManager().delete_event(event_id=self.google_event_id)
         else:
-            calendar.update_calendar_event(event_id=self.google_event_id, start_time=self.start_time, end_time=self.end_time)
+            CalendarManager().update_event(event_id=self.google_event_id, start_time=self.start_time, end_time=self.end_time)
         super(Lessons, self).save(force_insert, force_update, using, update_fields)
 
     def delete(self, using=None, keep_parents=False):
         if self.google_event_id:
-            calendar.delete_calendar_event(event_id=self.google_event_id)
+            CalendarManager().delete_event(event_id=self.google_event_id)
         super(Lessons, self).delete(using, keep_parents)

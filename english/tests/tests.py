@@ -3,7 +3,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 from english.models import Class, Lessons
 from users.models import User
-from english import calendar
+from english.calendar import CalendarManager
 from unittest.mock import patch
 
 
@@ -386,7 +386,7 @@ class LessonsForTeacher(APITestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
-    @patch('english.calendar.update_calendar_event')
+    @patch.object(CalendarManager, 'update_event')
     def test_update_lesson_success(self, mock_calendar_update):
         self.client.force_login(user=self.teacher)
         data = {
@@ -406,7 +406,7 @@ class LessonsForTeacher(APITestCase):
         self.assertDictEqual(dict(response.data), expected_data)
         mock_calendar_update.assert_called_once()
 
-    @patch('english.calendar.delete_calendar_event')
+    @patch.object(CalendarManager, 'delete_event')
     def test_update_lesson_success_second(self, mock_calendar_delete):
         self.client.force_login(user=self.teacher)
         data = {
@@ -468,7 +468,7 @@ class LessonsForTeacher(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual("Lesson status can be changed only to CANCELED.", response.data["status"])
 
-    @patch('english.calendar.create_calendar_event', return_value="google_id")
+    @patch.object(CalendarManager, 'create_event', return_value="google_id")
     def test_create_lesson_success(self, mock_calendar_insert):
         self.client.force_login(user=self.teacher)
         data = {
