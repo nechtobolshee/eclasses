@@ -15,11 +15,20 @@ services:
   django:
     build: .
     command: /bin/bash -c "exec invoke run-local"
-    volumes:
-      - .:/code
-    ports:
-      - 8000:8000
     depends_on:
       - postgres
     env_file:
       - .env
+    volumes:
+      - .:/code
+    ports:
+      - 8000:8000
+
+  react:
+    image: node:16.17
+    volumes:
+      - ./frontend:/frontend
+    working_dir: /frontend
+    command: bash -c "npm install && npm start"
+    ports:
+      - 3000:3000
