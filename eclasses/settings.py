@@ -43,7 +43,6 @@ INSTALLED_APPS = [
     'django.contrib.sites',
     'django_filters',
     'django_crontab',
-    'corsheaders',
     'rest_auth',
     'rest_auth.registration',
     'rest_framework',
@@ -70,7 +69,6 @@ REST_AUTH_SERIALIZERS = {
 }
 
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -78,10 +76,6 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-]
-
-CORS_ORIGIN_WHITELIST = [
-    'http://localhost:3000',
 ]
 
 ROOT_URLCONF = 'eclasses.urls'
