@@ -30,3 +30,5 @@ services:
       - ./frontend:/frontend
     working_dir: /frontend
     command: bash -c "npm install && npm start"
+    ports:
+      - 3000:3000

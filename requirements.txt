@@ -1,5 +1,6 @@
 Django==3.2.10
 djangorestframework==3.13.1
+djangorestframework-jwt==1.11.0
 djangorestframework-filters==0.9.0
 django-allauth==0.43.0
 django-rest-auth==0.9.5
@@ -7,6 +8,7 @@ django-rest-framework==0.1.0
 django-rest-swagger==2.0.7
 django-environ==0.8.1
 django-crontab==0.7.1
+django-cors-headers
 google-api-python-client==1.7.9
 google-auth-httplib2==0.0.3
 google-auth-oauthlib==0.4.0
