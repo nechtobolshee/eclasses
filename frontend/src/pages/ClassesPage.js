@@ -7,7 +7,7 @@ const ClassesListPage = () => {
     const [userClassesList, setUserClassesList] = useState([]);
 
     useEffect(() => {
-        const token = localStorage.getItem('token')
+        const token = localStorage.getItem("token")
         if (token == null) {
             window.location.replace(`http://localhost:3000/login`);
         } else {
@@ -23,6 +23,10 @@ const ClassesListPage = () => {
             fetchData().catch(console.error)
         }
     }, []);
+
+    const singleClass = (id) => () => {
+        window.location.replace(`http://localhost:3000/english/classes/${id}`)
+    }
 
     return (
         <div>
@@ -47,10 +51,10 @@ const ClassesListPage = () => {
                         <tbody id="tableData">
                         {
                             userClassesList.map((item) => (
-                                <tr key={item.pk}>
+                                <tr key={item.pk} onClick={singleClass(item.pk)}>
                                     <td>{item.name}</td>
                                     <td>{item.teacher.first_name} {item.teacher.last_name}</td>
-                                    <td>{item.days.join(', ')}</td>
+                                    <td>{item.days.join(", ")}</td>
                                     <td>{item.start_time}</td>
                                     <td>{item.end_time}</td>
                                 </tr>
@@ -82,7 +86,7 @@ const ClassesListPage = () => {
                                 <tr key={item.pk}>
                                     <td>{item.name}</td>
                                     <td>{item.teacher.first_name} {item.teacher.last_name}</td>
-                                    <td>{item.days.join(', ')}</td>
+                                    <td>{item.days.join(", ")}</td>
                                     <td>{item.start_time}</td>
                                     <td>{item.end_time}</td>
                                 </tr>

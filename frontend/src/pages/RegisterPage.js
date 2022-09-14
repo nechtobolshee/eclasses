@@ -1,13 +1,13 @@
-import React, {useState} from 'react';
+import React, {useState} from "react";
 import Header from "../components/Header";
 import {register} from "../requests/requests";
 
 
 const RegisterPage = () => {
-    const [username, setUsername] = useState('');
-    const [email, setEmail] = useState('');
-    const [password1, setPassword1] = useState('');
-    const [password2, setPassword2] = useState('');
+    const [username, setUsername] = useState("");
+    const [email, setEmail] = useState("");
+    const [password1, setPassword1] = useState("");
+    const [password2, setPassword2] = useState("");
 
     const onSubmit = async e => {
         e.preventDefault();
@@ -35,25 +35,25 @@ const RegisterPage = () => {
                                         <h2 className="text-uppercase text-center mb-5">Create an account</h2>
                                         <form onSubmit={onSubmit}>
                                             <div className="form-outline mb-4">
-                                                <input name='username' type="username" required
+                                                <input name="username" type="username" required
                                                        onChange={e => setUsername(e.target.value)}
                                                        className="form-control form-control-lg" placeholder="Username"/>
                                             </div>
 
                                             <div className="form-outline mb-4">
-                                                <input name='email' type="email" required
+                                                <input name="email" type="email" required
                                                        onChange={e => setEmail(e.target.value)}
                                                        className="form-control form-control-lg" placeholder="E-mail"/>
                                             </div>
 
                                             <div className="form-outline mb-4">
-                                                <input name='password1' type="password" required
+                                                <input name="password1" type="password" required
                                                        onChange={e => setPassword1(e.target.value)}
                                                        className="form-control form-control-lg" placeholder="Password"/>
                                             </div>
 
                                             <div className="form-outline mb-4">
-                                                <input name='password2' type="password" required
+                                                <input name="password2" type="password" required
                                                        onChange={e => setPassword2(e.target.value)}
                                                        className="form-control form-control-lg"
                                                        placeholder="Confirm password"/>

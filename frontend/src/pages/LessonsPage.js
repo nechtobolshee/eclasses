@@ -2,13 +2,12 @@ import React, {useEffect, useState} from "react";
 import Header from "../components/Header";
 import warning_sign from "../images/warning-sign.png"
 import {getCurrentUser, getStudentLessonsList, getTeacherLessonsList} from "../requests/requests";
-import default_avatar from "../images/default_avatar.jpg";
 
 const LessonsListPage = () => {
     const [userClassesList, setUserClassesList] = useState([]);
 
     useEffect(() => {
-        const token = localStorage.getItem('token')
+        const token = localStorage.getItem("token")
         if (token == null) {
             window.location.replace(`http://localhost:3000/login`);
         } else {
@@ -24,7 +23,7 @@ const LessonsListPage = () => {
         }
     }, []);
 
-    const SingleLesson = (id) => () => {
+    const singleLesson = (id) => () => {
         window.location.replace(`http://localhost:3000/english/lessons/${id}`)
     }
 
@@ -50,7 +49,7 @@ const LessonsListPage = () => {
                         <tbody id="tableData">
                         {
                             userClassesList.map((item) => (
-                                <tr key={item.pk} onClick={SingleLesson(item.pk)}>
+                                <tr key={item.pk} onClick={singleLesson(item.pk)}>
                                     <td>{item.class_name}</td>
                                     <td>{item.status}</td>
                                     <td>{item.start_time}</td>

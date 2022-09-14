@@ -1,11 +1,12 @@
 import React, {useEffect, useState} from "react";
 import Header from "../components/Header";
-import {getCurrentUser, getLessonByID, cancelLessonByID} from "../requests/requests";
+import {getCurrentUser, getClassByID, local_frontend_url} from "../requests/requests";
 
-
-const LessonPage = () => {
+const ClassPage = () => {
     const [class_name, setClassname] = useState("");
-    const [status, setStatus] = useState("");
+    const [students, setStudents] = useState([]);
+    const [teacher, setTeacher] = useState("");
+    const [days, setDays] = useState("");
     const [start_time, setStartTime] = useState("");
     const [end_time, setEndTime] = useState("");
     const [id, setId] = useState("");
@@ -16,9 +17,9 @@ const LessonPage = () => {
             window.location.replace(`http://localhost:3000/login`);
         } else {
             const fetchData = async () => {
-                const userData = await getCurrentUser(token)
+                const userData = await getCurrentUser(token);
                 if (userData.role !== "Teacher") {
-                    window.location.replace(`http://localhost:3000/english/lessons`);
+                    window.location.replace(`${local_frontend_url}/english/`);
                 } else {
                     let route = window.location.href;
                     setId(route.split("/").pop());
@@ -30,18 +31,16 @@ const LessonPage = () => {
 
     useEffect(() => {
         const fetchData = async () => {
-            const data = await getLessonByID(id)
-            setClassname(data.class_name);
-            setStatus(data.status);
+            const data = await getClassByID(id);
+            setClassname(data.name);
+            data.students.map((item) => (students.push(`${item.first_name} ${item.last_name}`)));
+            setTeacher(`${data.teacher.first_name} ${data.teacher.last_name}`);
+            setDays(data.days.join(", "));
             setStartTime(data.start_time);
             setEndTime(data.end_time);
         }
         fetchData().catch(console.error)
     }, [id]);
-
-    async function cancelLesson() {
-        await cancelLessonByID(id)
-    }
 
     return (
         <div>
@@ -51,7 +50,7 @@ const LessonPage = () => {
             <div className="main main-raised">
                 <div className="container">
                     <div className="margin-content">
-                        <h3 className="center-horizontal">Lesson details</h3>
+                        <h3 className="center-horizontal">Class details</h3>
                     </div>
                     <table className="table table-hover text-nowrap">
                         <tbody>
@@ -60,8 +59,16 @@ const LessonPage = () => {
                             <td>{class_name}</td>
                         </tr>
                         <tr>
-                            <th scope="row">Status</th>
-                            <td>{status}</td>
+                            <th scope="row">Students</th>
+                            <td>{students.join(", ")}</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Teacher</th>
+                            <td>{teacher}</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Days</th>
+                            <td>{days}</td>
                         </tr>
                         <tr>
                             <th scope="row">Time start</th>
@@ -73,13 +80,10 @@ const LessonPage = () => {
                         </tr>
                         </tbody>
                     </table>
-                    <div className="d-flex justify-content-center">
-                        <button className="btn btn-dark btn-lg btn-block" onClick={cancelLesson}>Cancel</button>
-                    </div>
                 </div>
             </div>
         </div>
     )
 };
 
-export default LessonPage;
+export default ClassPage;

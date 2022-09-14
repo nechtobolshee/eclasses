@@ -7,7 +7,7 @@ const UpdateProfilePage = () => {
     const [last_name, setLastName] = useState(null);
     const [avatar, setAvatar] = useState(null);
 
-    const token = localStorage.getItem('token')
+    const token = localStorage.getItem("token")
     if (token == null) {
         window.location.replace(`http://localhost:3000/login`);
     }

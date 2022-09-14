@@ -5,15 +5,15 @@ import {getCurrentUser, logout, local_frontend_url} from "../requests/requests";
 
 
 const ProfilePage = () => {
-    const [first_name, setFirstname] = useState('');
-    const [last_name, setLastname] = useState('');
-    const [username, setUsername] = useState('');
-    const [email, setEmail] = useState('');
-    const [role, setRole] = useState('');
+    const [first_name, setFirstname] = useState("");
+    const [last_name, setLastname] = useState("");
+    const [username, setUsername] = useState("");
+    const [email, setEmail] = useState("");
+    const [role, setRole] = useState("");
     const [avatar, setAvatar] = useState(null);
 
     useEffect(() => {
-        const token = localStorage.getItem('token')
+        const token = localStorage.getItem("token");
         if (token == null) {
             window.location.replace(`${local_frontend_url}/login`);
         } else {
@@ -31,7 +31,7 @@ const ProfilePage = () => {
     }, []);
 
     async function toLogout() {
-        await logout(localStorage.getItem('token'))
+        await logout(localStorage.getItem("token"))
         window.location.replace(`${local_frontend_url}/login`)
     }
 

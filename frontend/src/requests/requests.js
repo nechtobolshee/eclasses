@@ -204,3 +204,15 @@ export async function cancelLessonByID(id) {
             }
         });
 }
+
+export async function getClassByID(id) {
+    return fetch(`${local_frontend_url}/api/english/teacher/classes/${id}`, {
+        headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': 'http://localhost:3000',
+            'X-CSRFToken': Cookies.get('csrftoken')
+        },
+        credentials: 'include'
+    })
+        .then(res => res.json())
+}
