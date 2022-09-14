@@ -12,6 +12,8 @@ import ProfilePage from './pages/ProfilePage';
 import UpdateProfilePage from "./pages/UpdateProfilePage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
+import ClassesListPage from "./pages/ClassesPage";
+import LessonsListPage from "./pages/LessonsPage";
 
 
 ReactDOM.render(
@@ -22,6 +24,8 @@ ReactDOM.render(
             <Route exact path="/profile/edit/" component={UpdateProfilePage} />
             <Route exact path="/login/" component={LoginPage} />
             <Route exact path="/register/" component={RegisterPage} />
+            <Route exact path="/english/" component={ClassesListPage} />
+            <Route exact path="/english/lessons/" component={LessonsListPage} />
         </Switch>
         <ToastContainer
             position="top-right"

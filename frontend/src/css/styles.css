@@ -50,3 +50,8 @@ body {
 .margin-content {
   margin-bottom: 20px;
 }
+
+.avatar-size {
+  height: 20%;
+  width: 20%;
+}

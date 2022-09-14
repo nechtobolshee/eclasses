@@ -21,8 +21,8 @@ services:
       - .env
     volumes:
       - .:/code
-    ports:
-      - 8000:8000
+    expose:
+      - 8000
 
   react:
     image: node:16.17
@@ -30,5 +30,17 @@ services:
       - ./frontend:/frontend
     working_dir: /frontend
     command: bash -c "npm install && npm start"
+
+  nginx:
+    image: nginx:latest
+    expose:
+      - 8000
+      - 3000
     ports:
-      - 3000:3000
+      - "8000:8000"
+      - "3000:3000"
+    depends_on:
+      - django
+      - react
+    volumes:
+      - ./nginx/setup_nginx.conf:/etc/nginx/conf.d/web.conf

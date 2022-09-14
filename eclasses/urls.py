@@ -20,8 +20,8 @@ from rest_framework_swagger.views import get_swagger_view
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('auth/', include('rest_auth.urls')),
-    path('auth/registration/', include('rest_auth.registration.urls')),
+    path('api/auth/', include('rest_auth.urls')),
+    path('api/auth/registration/', include('rest_auth.registration.urls')),
+    path('api/english/', include('english.urls')),
     path('docs/', get_swagger_view(title='EClasses Rest API Document')),
-    path('english/', include('english.urls')),
 ]
