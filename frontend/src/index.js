@@ -7,7 +7,6 @@ import './css/styles.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'react-toastify/dist/ReactToastify.css';
 
-import HomePage from "./pages/HomePage";
 import ProfilePage from './pages/ProfilePage';
 import UpdateProfilePage from "./pages/UpdateProfilePage";
 import LoginPage from "./pages/LoginPage";
@@ -20,7 +19,6 @@ import LessonPage from "./pages/LessonPage";
 ReactDOM.render(
     <BrowserRouter>
         <Switch>
-            <Route exact path="/" component={HomePage}/>
             <Route exact path="/profile/" component={ProfilePage}/>
             <Route exact path="/profile/edit/" component={UpdateProfilePage}/>
             <Route exact path="/login/" component={LoginPage}/>

@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from "react";
 import Header from "../components/Header";
 import default_avatar from "../images/default_avatar.jpg"
-import {getCurrentUser} from "../requests/requests";
+import {getCurrentUser, logout, local_frontend_url} from "../requests/requests";
 
 
 const ProfilePage = () => {
@@ -15,7 +15,7 @@ const ProfilePage = () => {
     useEffect(() => {
         const token = localStorage.getItem('token')
         if (token == null) {
-            window.location.replace(`http://localhost:3000/login`);
+            window.location.replace(`${local_frontend_url}/login`);
         } else {
             const fetchData = async () => {
                 const data = await getCurrentUser(token)
@@ -29,6 +29,12 @@ const ProfilePage = () => {
             fetchData().catch(console.error)
         }
     }, []);
+
+    async function toLogout() {
+        await logout(localStorage.getItem('token'))
+        window.location.replace(`${local_frontend_url}/login`)
+    }
+
     return (
         <div>
             <header>
@@ -76,8 +82,9 @@ const ProfilePage = () => {
                         </tr>
                         </tbody>
                     </table>
-                    <div className="d-flex justify-content-center">
+                    <div>
                         <a href="profile/edit/" className="btn btn-dark btn-lg btn-block">Edit</a>
+                        <button className="btn btn-dark btn-lg btn-block" onClick={toLogout}>Logout</button>
                     </div>
                 </div>
             </div>
