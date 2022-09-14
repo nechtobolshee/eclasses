@@ -66,8 +66,8 @@ const LessonsListPage = () => {
                 <div className="main main-raised">
                     <div className="container">
                         <img src={warning_sign} className="default-sign" alt="Warning sign"/>
-                        <h3 className="center-horizontal">There are currently no lessons found for you</h3>
-                        <h4 className="center-horizontal">Contact the teacher for more information</h4>
+                        <h4 className="center-horizontal">There are currently no lessons for you</h4>
+                        <h5 className="center-horizontal">Contact the teacher for more information</h5>
                     </div>
                 </div>
             }
