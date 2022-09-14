@@ -21,9 +21,9 @@ const ProfilePage = () => {
                 const data = await getCurrentUser(token)
                 setFirstname(data.first_name);
                 setLastname(data.last_name);
-                setUsername(data.username)
+                setUsername(data.username);
                 setEmail(data.email);
-                setRole(data.role)
+                setRole(data.role);
                 setAvatar(data.avatar);
             }
             fetchData().catch(console.error)
@@ -38,12 +38,12 @@ const ProfilePage = () => {
                 <div className="container">
                     <div className="center-horizontal margin-content">
                         {avatar &&
-                            <img src={avatar} alt="Circle"
-                                 className="avatar-size img-raised rounded-circle img-fluid"></img>
+                            <img src={avatar} alt="Profile photo"
+                                 className="avatar-size"></img>
                         }
                         {!avatar &&
                             <img src={default_avatar} alt="Circle"
-                                 className="avatar-size img-raised rounded-circle img-fluid"></img>
+                                 className="avatar-size"></img>
                         }
                     </div>
                     <div className="margin-content">

@@ -172,3 +172,35 @@ export async function getTeacherLessonsList() {
     })
         .then(res => res.json())
 }
+
+export async function getLessonByID(id) {
+    return fetch(`${local_frontend_url}/api/english/teacher/lessons/${id}`, {
+        headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': 'http://localhost:3000',
+            'X-CSRFToken': Cookies.get('csrftoken')
+        },
+        credentials: 'include'
+    })
+        .then(res => res.json())
+}
+
+export async function cancelLessonByID(id) {
+    const data = {status: "CANCELED"};
+    await fetch(`${local_frontend_url}/api/english/teacher/lessons/${id}/`, {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': 'http://localhost:3000',
+            'X-CSRFToken': Cookies.get('csrftoken'),
+        },
+        body: JSON.stringify(data),
+    })
+        .then(res => {
+            if (res.ok) {
+                window.location.replace(`${local_frontend_url}/english/lessons`);
+            } else {
+                toast.error(res.statusText);
+            }
+        });
+}

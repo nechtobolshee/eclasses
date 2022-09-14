@@ -52,6 +52,16 @@ body {
 }
 
 .avatar-size {
-  height: 20%;
-  width: 20%;
+  object-fit: cover;
+  height: 200px;
+  width: 200px;
+  border-radius: 50%;
+}
+
+.default-sign {
+  height: 50px;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  margin-bottom: 30px;
 }

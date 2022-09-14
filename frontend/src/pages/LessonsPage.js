@@ -1,6 +1,8 @@
 import React, {useEffect, useState} from "react";
 import Header from "../components/Header";
+import warning_sign from "../images/warning-sign.png"
 import {getCurrentUser, getStudentLessonsList, getTeacherLessonsList} from "../requests/requests";
+import default_avatar from "../images/default_avatar.jpg";
 
 const LessonsListPage = () => {
     const [userClassesList, setUserClassesList] = useState([]);
@@ -21,6 +23,10 @@ const LessonsListPage = () => {
             fetchData().catch(console.error)
         }
     }, []);
+
+    const SingleLesson = (id) => () => {
+        window.location.replace(`http://localhost:3000/english/lessons/${id}`)
+    }
 
     return (
         <div>
@@ -44,7 +50,7 @@ const LessonsListPage = () => {
                         <tbody id="tableData">
                         {
                             userClassesList.map((item) => (
-                                <tr key={item.pk}>
+                                <tr key={item.pk} onClick={SingleLesson(item.pk)}>
                                     <td>{item.class_name}</td>
                                     <td>{item.status}</td>
                                     <td>{item.start_time}</td>
@@ -56,6 +62,15 @@ const LessonsListPage = () => {
                     </table>
                 </div>
             </div>
+            {userClassesList.length === 0 &&
+                <div className="main main-raised">
+                    <div className="container">
+                        <img src={warning_sign} className="default-sign" alt="Warning sign"/>
+                        <h3 className="center-horizontal">There are currently no lessons found for you</h3>
+                        <h4 className="center-horizontal">Contact the teacher for more information</h4>
+                    </div>
+                </div>
+            }
         </div>
     )
 };

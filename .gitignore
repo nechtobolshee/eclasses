@@ -13,6 +13,9 @@ __pycache__/
 .static/
 static/
 
+# User media
+uploads/
+
 # idea files
 .idea
 .idea/
