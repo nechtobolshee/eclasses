@@ -12,15 +12,15 @@ class CalendarManager:
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.SCOPES = ['https://www.googleapis.com/auth/calendar']
-        self.CREDENTIALS_FILE = 'english/calendar_credentials.json'
+        self.CREDENTIALS_FILE = 'english/cl_credentials.json'
         self.logger = logging.getLogger('django')
         self.service = self._get_calendar_service()
 
     def _get_calendar_service(self):
         creds = None
 
-        if os.path.exists('english/calendar_token.pickle'):
-            with open('english/calendar_token.pickle', 'rb') as token:
+        if os.path.exists('english/cl_token.pickle'):
+            with open('english/cl_token.pickle', 'rb') as token:
                 creds = pickle.load(token)
 
         # If there are no (valid) credentials available, let the user log in.
@@ -32,7 +32,7 @@ class CalendarManager:
                 creds = flow.run_local_server(port=8050)
 
             # Save the credentials for the next run
-            with open('english/calendar_token.pickle', 'wb') as token:
+            with open('english/cl_token.pickle', 'wb') as token:
                 pickle.dump(creds, token)
 
         return build('calendar', 'v3', credentials=creds)

@@ -1,6 +1,7 @@
 # Credentials
-calendar_credentials.json
-calendar_token.pickle
+cl_credentials.json
+cl_token.json
+cl_token.pickle
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -11,6 +12,9 @@ __pycache__/
 # Django static folder
 .static/
 static/
+
+# User media
+uploads/
 
 # idea files
 .idea

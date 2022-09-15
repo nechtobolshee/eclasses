@@ -17,7 +17,7 @@ class User(AbstractUser):
         (HR, _("HR")),
     ]
 
-    avatar = models.ImageField(upload_to='images/', blank=True)
+    avatar = models.ImageField(upload_to='uploads/', blank=True)
     _role = models.CharField(max_length=10, null=False, choices=user_roles, default=EMPLOYEE)
 
     def __str__(self):

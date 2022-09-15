@@ -7,12 +7,11 @@ class Header extends Component {
             <div className="header">
                 <div className="menu-area">
                     <nav className="main-menu">
-                        <Link to="/">Some picture</Link>
-                        <Link class="nav-right" to="#">FAQ</Link>
-                        <Link class="nav-right" to="#">Lessons</Link>
-                        <Link class="nav-right" to="#">Classes</Link>
-                        <Link class="nav-right" to="/profile">Profile</Link>
-                        <Link class="nav-right" to="/">Home</Link>
+                        <Link to="/english">Some picture</Link>
+                        <Link className="nav-right" to={{pathname: "http://0.0.0.0:8000/docs/"}} target="_blank">Docs</Link>
+                        <Link className="nav-right" to="/english/lessons">Lessons</Link>
+                        <Link className="nav-right" to="/english">Classes</Link>
+                        <Link className="nav-right" to="/profile">Profile</Link>
                     </nav>
                 </div>
             </div>
