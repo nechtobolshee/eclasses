@@ -62,20 +62,18 @@ class Class(models.Model):
         if date_end.date() <= date_from.date():
             return
 
-        lessons_to_create = list()
         for day in range(1, (date_end - date_from).days + 1):
             date = date_from + timedelta(days=day)
             if date.weekday() in self.days:
-                lessons_to_create.append(Lessons(
-                    class_name=self,
-                    start_time=datetime.combine(date=date, time=self.start_time),
-                    end_time=datetime.combine(date=date, time=self.end_time),
-                ))
-        if len(lessons_to_create) > 0:
-            Lessons.objects.bulk_create(lessons_to_create)
-            logger.warning(f"Created {len(lessons_to_create)} lessons for {self} class.")
-        else:
-            logger.warning(f"Lessons for {self} class have already been created. Nothing has changed.")
+                try:
+                    Lessons(
+                        class_name=self,
+                        start_time=datetime.combine(date=date, time=self.start_time),
+                        end_time=datetime.combine(date=date, time=self.end_time),
+                    ).save()
+                    logger.warning(f"Created lesson for {self} class.")
+                except:
+                    logger.warning(f"Failed to create lesson for {self} class. Nothing has changed.")
 
 
 class Lessons(models.Model):
@@ -156,11 +154,13 @@ class Lessons(models.Model):
 
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
         if not self.pk:
-            self.google_event_id = CalendarManager().create_event(event_name=self.class_name.name, start_time=self.start_time, end_time=self.end_time)
+            self.google_event_id = CalendarManager().create_event(event_name=self.class_name.name,
+                                                                  start_time=self.start_time, end_time=self.end_time)
         elif self._status == self.CANCELED:
             CalendarManager().delete_event(event_id=self.google_event_id)
         else:
-            CalendarManager().update_event(event_id=self.google_event_id, start_time=self.start_time, end_time=self.end_time)
+            CalendarManager().update_event(event_id=self.google_event_id, start_time=self.start_time,
+                                           end_time=self.end_time)
         super(Lessons, self).save(force_insert, force_update, using, update_fields)
 
     def delete(self, using=None, keep_parents=False):

@@ -8,7 +8,8 @@ const LessonPage = () => {
     const [status, setStatus] = useState("");
     const [start_time, setStartTime] = useState("");
     const [end_time, setEndTime] = useState("");
-    const [id, setId] = useState("");
+    const route = window.location.href;
+
 
     useEffect(() => {
         const token = localStorage.getItem("token");
@@ -19,9 +20,6 @@ const LessonPage = () => {
                 const userData = await getCurrentUser(token)
                 if (userData.role !== "Teacher") {
                     window.location.replace(`http://localhost:3000/english/lessons`);
-                } else {
-                    let route = window.location.href;
-                    setId(route.split("/").pop());
                 }
             }
             fetchData().catch(console.error);
@@ -30,17 +28,17 @@ const LessonPage = () => {
 
     useEffect(() => {
         const fetchData = async () => {
-            const data = await getLessonByID(id)
+            const data = await getLessonByID(route.split("/").pop());
             setClassname(data.class_name);
             setStatus(data.status);
             setStartTime(data.start_time);
             setEndTime(data.end_time);
         }
         fetchData().catch(console.error)
-    }, [id]);
+    }, []);
 
     async function cancelLesson() {
-        await cancelLessonByID(id)
+        await cancelLessonByID(route.split("/").pop())
     }
 
     return (
