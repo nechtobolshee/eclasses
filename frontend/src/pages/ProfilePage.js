@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from "react";
 import Header from "../components/Header";
-import default_avatar from "../images/default_avatar.jpg"
+import default_avatar from "../images/default_avatar.jpg";
 import {getCurrentUser, logout, local_frontend_url} from "../requests/requests";
 
 

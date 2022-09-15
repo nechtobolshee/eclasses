@@ -3,6 +3,7 @@ import Header from "../components/Header";
 import {getClassesList, getCurrentUser, getStudentClassesList, getTeacherClassesList} from "../requests/requests";
 
 const ClassesListPage = () => {
+    const [user, setUser] = useState(null)
     const [classesList, setClassesList] = useState([]);
     const [userClassesList, setUserClassesList] = useState([]);
 
@@ -13,6 +14,7 @@ const ClassesListPage = () => {
         } else {
             const fetchData = async () => {
                 const userData = await getCurrentUser(token)
+                setUser(userData)
                 setClassesList(await getClassesList());
                 if (userData.role === "Teacher") {
                     setUserClassesList(await getTeacherClassesList());
@@ -25,7 +27,9 @@ const ClassesListPage = () => {
     }, []);
 
     const singleClass = (id) => () => {
-        window.location.replace(`http://localhost:3000/english/classes/${id}`)
+        if (user?.role === "Teacher") {
+            window.location.replace(`http://localhost:3000/english/classes/${id}`)
+        }
     }
 
     return (

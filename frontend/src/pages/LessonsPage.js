@@ -3,8 +3,10 @@ import Header from "../components/Header";
 import warning_sign from "../images/warning-sign.png"
 import {getCurrentUser, getStudentLessonsList, getTeacherLessonsList} from "../requests/requests";
 
+
 const LessonsListPage = () => {
     const [userClassesList, setUserClassesList] = useState([]);
+    const [user, setUser] = useState(null)
 
     useEffect(() => {
         const token = localStorage.getItem("token")
@@ -13,6 +15,7 @@ const LessonsListPage = () => {
         } else {
             const fetchData = async () => {
                 const userData = await getCurrentUser(token)
+                setUser(userData)
                 if (userData.role === "Teacher") {
                     setUserClassesList(await getTeacherLessonsList());
                 } else {
@@ -24,7 +27,9 @@ const LessonsListPage = () => {
     }, []);
 
     const singleLesson = (id) => () => {
-        window.location.replace(`http://localhost:3000/english/lessons/${id}`)
+        if (user?.role === "Teacher") {
+            window.location.replace(`http://localhost:3000/english/lessons/${id}`)
+        }
     }
 
     return (
