@@ -1,6 +1,8 @@
 import Cookies from "js-cookie";
 import {toast} from "react-toastify";
 
+const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
 export const local_frontend_url = 'http://localhost:3000'
 
 export async function login(user) {
@@ -10,6 +12,7 @@ export async function login(user) {
             'Content-Type': 'application/json',
             'Access-Control-Allow-Origin': 'http://localhost:3000',
             'X-CSRFToken': Cookies.get('csrftoken'),
+            'Client-Location': timezone
         },
         body: JSON.stringify(user),
         credentials: "include"
@@ -48,6 +51,7 @@ export async function register(user) {
             'Content-Type': 'application/json',
             'Access-Control-Allow-Origin': 'http://localhost:3000',
             'X-CSRFToken': Cookies.get('csrftoken'),
+            'Client-Location': timezone
         },
         body: JSON.stringify(user),
     })
@@ -67,7 +71,8 @@ export async function getCurrentUser(token) {
             "Content-Type": "application/json",
             'Authorization': `Token ${token}`,
             'Access-Control-Allow-Origin': 'http://localhost:3000',
-            'X-CSRFToken': Cookies.get('csrftoken')
+            'X-CSRFToken': Cookies.get('csrftoken'),
+            'Client-Location': timezone
         },
         credentials: 'include'
     })
@@ -118,7 +123,8 @@ export async function getClassesList() {
         headers: {
             "Content-Type": "application/json",
             'Access-Control-Allow-Origin': 'http://localhost:3000',
-            'X-CSRFToken': Cookies.get('csrftoken')
+            'X-CSRFToken': Cookies.get('csrftoken'),
+            'Client-Location': timezone
         },
         credentials: 'include'
     })
@@ -130,7 +136,8 @@ export async function getStudentClassesList() {
         headers: {
             "Content-Type": "application/json",
             'Access-Control-Allow-Origin': 'http://localhost:3000',
-            'X-CSRFToken': Cookies.get('csrftoken')
+            'X-CSRFToken': Cookies.get('csrftoken'),
+            'Client-Location': timezone
         },
         credentials: 'include'
     })
@@ -142,7 +149,8 @@ export async function getTeacherClassesList() {
         headers: {
             "Content-Type": "application/json",
             'Access-Control-Allow-Origin': 'http://localhost:3000',
-            'X-CSRFToken': Cookies.get('csrftoken')
+            'X-CSRFToken': Cookies.get('csrftoken'),
+            'Client-Location': timezone
         },
         credentials: 'include'
     })
@@ -154,7 +162,8 @@ export async function getStudentLessonsList() {
         headers: {
             "Content-Type": "application/json",
             'Access-Control-Allow-Origin': 'http://localhost:3000',
-            'X-CSRFToken': Cookies.get('csrftoken')
+            'X-CSRFToken': Cookies.get('csrftoken'),
+            'Client-Location': timezone
         },
         credentials: 'include'
     })
@@ -166,7 +175,8 @@ export async function getTeacherLessonsList() {
         headers: {
             "Content-Type": "application/json",
             'Access-Control-Allow-Origin': 'http://localhost:3000',
-            'X-CSRFToken': Cookies.get('csrftoken')
+            'X-CSRFToken': Cookies.get('csrftoken'),
+            'Client-Location': timezone
         },
         credentials: 'include'
     })
@@ -178,7 +188,8 @@ export async function getLessonByID(id) {
         headers: {
             'Content-Type': 'application/json',
             'Access-Control-Allow-Origin': 'http://localhost:3000',
-            'X-CSRFToken': Cookies.get('csrftoken')
+            'X-CSRFToken': Cookies.get('csrftoken'),
+            'Client-Location': timezone
         },
         credentials: 'include'
     })
@@ -210,7 +221,8 @@ export async function getClassByID(id) {
         headers: {
             'Content-Type': 'application/json',
             'Access-Control-Allow-Origin': 'http://localhost:3000',
-            'X-CSRFToken': Cookies.get('csrftoken')
+            'X-CSRFToken': Cookies.get('csrftoken'),
+            'Client-Location': timezone
         },
         credentials: 'include'
     })
