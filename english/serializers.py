@@ -62,10 +62,8 @@ class LessonsSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         validated_data.pop("status", None)
-        if "start_time" in validated_data:
-            validated_data["start_time"] = convert_datetime_to_utc_timezone(validated_data["start_time"])
-        if "end_time" in validated_data:
-            validated_data["end_time"] = convert_datetime_to_utc_timezone(validated_data["end_time"])
+        validated_data["start_time"] = convert_datetime_to_utc_timezone(validated_data["start_time"])
+        validated_data["end_time"] = convert_datetime_to_utc_timezone(validated_data["end_time"])
         return super(LessonsSerializer, self).create(validated_data)
 
     def update(self, instance, validated_data):
