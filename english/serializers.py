@@ -4,6 +4,7 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
 from users.models import User
+from users.tz_convertation import convert_datetime_to_user_timezone, convert_datetime_to_utc_timezone
 from .models import Class, Lessons
 
 
@@ -55,16 +56,26 @@ class LessonsSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         ret = super().to_representation(instance)
         ret["class_name"] = ClassSerializer(instance.class_name).data["name"]
+        ret["start_time"] = convert_datetime_to_user_timezone(instance.start_time).strftime("%Y-%m-%d %H:%M")
+        ret["end_time"] = convert_datetime_to_user_timezone(instance.end_time).strftime("%Y-%m-%d %H:%M")
         return ret
 
     def create(self, validated_data):
         validated_data.pop("status", None)
+        if "start_time" in validated_data:
+            validated_data["start_time"] = convert_datetime_to_utc_timezone(validated_data["start_time"])
+        if "end_time" in validated_data:
+            validated_data["end_time"] = convert_datetime_to_utc_timezone(validated_data["end_time"])
         return super(LessonsSerializer, self).create(validated_data)
 
     def update(self, instance, validated_data):
         validated_data.pop("class_name", None)
         if "status" in validated_data and validated_data["status"] != Lessons.CANCELED:
             raise ValidationError({"status": "Lesson status can be changed only to CANCELED."})
+        if "start_time" in validated_data:
+            validated_data["start_time"] = convert_datetime_to_utc_timezone(validated_data["start_time"])
+        if "end_time" in validated_data:
+            validated_data["end_time"] = convert_datetime_to_utc_timezone(validated_data["end_time"])
         instance = super(LessonsSerializer, self).update(instance, validated_data)
         return instance
 
