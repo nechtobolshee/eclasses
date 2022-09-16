@@ -2,9 +2,12 @@ from datetime import datetime
 
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
-
 from users.models import User
-from users.tz_convertation import convert_datetime_to_user_timezone, convert_datetime_to_utc_timezone
+from users.tz_convertation import (convert_datetime_to_user_timezone,
+                                   convert_datetime_to_utc_timezone,
+                                   convert_time_to_user_timezone,
+                                   convert_time_to_utc_timezone)
+
 from .models import Class, Lessons
 
 
@@ -25,10 +28,14 @@ class ClassSerializer(serializers.ModelSerializer):
         ret["teacher"] = UserSerializer(instance.teacher).data
         ret["students"] = [UserSerializer(entry).data for entry in instance.students.all()]
         ret["days"] = [day[1] for day in Class.week_days if day[0] in instance.days]
+        ret["start_time"] = convert_time_to_user_timezone(instance.start_time)
+        ret["end_time"] = convert_time_to_user_timezone(instance.end_time)
         return ret
 
     def create(self, validated_data):
         validated_data["teacher"] = self.context["request"].user
+        validated_data["start_time"] = convert_time_to_utc_timezone(validated_data["start_time"])
+        validated_data["end_time"] = convert_time_to_utc_timezone(validated_data["end_time"])
         return super(ClassSerializer, self).create(validated_data)
 
     def validate(self, attrs):

@@ -4,7 +4,7 @@ import {getCurrentUser, getClassByID, local_frontend_url} from "../requests/requ
 
 const ClassPage = () => {
     const [class_name, setClassname] = useState("");
-    const [students, setStudents] = useState([]);
+    const [students] = useState([]);
     const [teacher, setTeacher] = useState("");
     const [days, setDays] = useState("");
     const [start_time, setStartTime] = useState("");
@@ -59,14 +59,6 @@ const ClassPage = () => {
                             <td>{class_name}</td>
                         </tr>
                         <tr>
-                            <th scope="row">Students</th>
-                            <td>{students.join(", ")}</td>
-                        </tr>
-                        <tr>
-                            <th scope="row">Teacher</th>
-                            <td>{teacher}</td>
-                        </tr>
-                        <tr>
                             <th scope="row">Days</th>
                             <td>{days}</td>
                         </tr>
@@ -77,6 +69,14 @@ const ClassPage = () => {
                         <tr>
                             <th scope="row">Time end</th>
                             <td>{end_time}</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Teacher</th>
+                            <td>{teacher}</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Students</th>
+                            <td>{students.join(", ")}</td>
                         </tr>
                         </tbody>
                     </table>
