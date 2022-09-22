@@ -10,7 +10,6 @@ import "react-toastify/dist/ReactToastify.css";
 import ProfilePage from "./pages/ProfilePage";
 import UpdateProfilePage from "./pages/UpdateProfilePage";
 import LoginPage from "./pages/LoginPage";
-import RegisterPage from "./pages/RegisterPage";
 import ClassesListPage from "./pages/ClassesPage";
 import LessonsListPage from "./pages/LessonsPage";
 import LessonPage from "./pages/LessonPage";
@@ -23,7 +22,6 @@ ReactDOM.render(
             <Route exact path="/profile/" component={ProfilePage}/>
             <Route exact path="/profile/edit/" component={UpdateProfilePage}/>
             <Route exact path="/login/" component={LoginPage}/>
-            <Route exact path="/register/" component={RegisterPage}/>
             <Route exact path="/english/" component={ClassesListPage}/>
             <Route exact path="/english/lessons/" component={LessonsListPage}/>
             <Route exact path="/english/lessons/:id" component={LessonPage}/>

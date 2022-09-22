@@ -10,7 +10,6 @@ const LessonPage = () => {
     const [end_time, setEndTime] = useState("");
     const route = window.location.href;
 
-
     useEffect(() => {
         const token = localStorage.getItem("token");
         if (token == null) {
@@ -24,7 +23,7 @@ const LessonPage = () => {
             }
             fetchData().catch(console.error);
         }
-    }, []);
+    });
 
     useEffect(() => {
         const fetchData = async () => {
@@ -35,7 +34,7 @@ const LessonPage = () => {
             setEndTime(data.end_time);
         }
         fetchData().catch(console.error)
-    }, []);
+    });
 
     async function cancelLesson() {
         await cancelLessonByID(route.split("/").pop())

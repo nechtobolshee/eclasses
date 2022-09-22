@@ -44,7 +44,7 @@ const ProfilePage = () => {
                 <div className="container">
                     <div className="center-horizontal margin-content">
                         {avatar &&
-                            <img src={avatar} alt="Profile photo"
+                            <img src={avatar} alt="Profile"
                                  className="avatar-size"></img>
                         }
                         {!avatar &&

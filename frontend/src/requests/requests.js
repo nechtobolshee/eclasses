@@ -5,29 +5,6 @@ const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
 export const local_frontend_url = 'http://localhost:3000'
 
-export async function login(user) {
-    await fetch(`${local_frontend_url}/api/auth/login/`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': 'http://localhost:3000',
-            'X-CSRFToken': Cookies.get('csrftoken'),
-            'Client-Location': timezone
-        },
-        body: JSON.stringify(user),
-        credentials: "include"
-    })
-        .then(res => res.json())
-        .then(data => {
-            if (data.key) {
-                localStorage.setItem('token', data.key);
-                window.location.replace(`${local_frontend_url}/profile`);
-            } else {
-                toast.warning("Cannot log in with provided credentials!");
-            }
-        });
-}
-
 export async function google_login(access_token) {
     return await fetch(`${local_frontend_url}/api/auth/google/`, {
         method: 'POST',
@@ -50,21 +27,6 @@ export async function google_login(access_token) {
         });
 }
 
-export async function logout() {
-    await fetch(`${local_frontend_url}/api/auth/logout/`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem("token")}`
-        }
-    })
-        .then(res => res.json())
-        .then(data => {
-            localStorage.clear();
-            window.location.replace(`${local_frontend_url}/`);
-        });
-}
-
 export async function google_logout() {
     await fetch(`${local_frontend_url}/api/auth/google/logout/`, {
         method: 'POST',
@@ -79,26 +41,6 @@ export async function google_logout() {
         .then(data => {
             localStorage.clear();
             window.location.replace(`${local_frontend_url}/`);
-        });
-}
-
-export async function register(user) {
-    await fetch(`${local_frontend_url}/api/auth/registration/`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': 'http://localhost:3000',
-            'X-CSRFToken': Cookies.get('csrftoken'),
-            'Client-Location': timezone
-        },
-        body: JSON.stringify(user),
-    })
-        .then(res => {
-            if (res.ok) {
-                window.location.replace(`${local_frontend_url}/profile`);
-            } else {
-                toast.error(res.statusText);
-            }
         });
 }
 
