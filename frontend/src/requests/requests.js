@@ -28,14 +28,52 @@ export async function login(user) {
         });
 }
 
-export async function logout(token) {
+export async function google_login(access_token) {
+    return await fetch(`${local_frontend_url}/api/auth/google/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': Cookies.get('csrftoken'),
+        },
+        body: JSON.stringify({
+            'token': access_token
+        })
+    })
+        .then(res => res.json())
+        .then(res => {
+            if (res.access_token) {
+                localStorage.setItem('token', res.access_token);
+                window.location.replace(`${local_frontend_url}/profile`);
+            } else {
+                toast.warning("Cannot log in with provided credentials!");
+            }
+        });
+}
+
+export async function logout() {
     await fetch(`${local_frontend_url}/api/auth/logout/`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            Authorization: `Token ${token}`
+            'Authorization': `Bearer ${localStorage.getItem("token")}`
+        }
+    })
+        .then(res => res.json())
+        .then(data => {
+            localStorage.clear();
+            window.location.replace(`${local_frontend_url}/`);
+        });
+}
+
+export async function google_logout() {
+    await fetch(`${local_frontend_url}/api/auth/google/logout/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
         },
-        credentials: "include"
+        body: JSON.stringify({
+            'token': localStorage.getItem("token"),
+        })
     })
         .then(res => res.json())
         .then(data => {
@@ -69,7 +107,7 @@ export async function getCurrentUser(token) {
     await fetch(`${local_frontend_url}/api/auth/user/`, {
         headers: {
             "Content-Type": "application/json",
-            'Authorization': `Token ${token}`,
+            'Authorization': `Bearer ${token}`,
             'Access-Control-Allow-Origin': 'http://localhost:3000',
             'X-CSRFToken': Cookies.get('csrftoken'),
             'Client-Location': timezone
@@ -88,7 +126,7 @@ export async function getCurrentUser(token) {
     return user
 }
 
-export async function updateCurrentUser(token, user) {
+export async function updateCurrentUser(user) {
     const formData = new FormData();
     if (user.avatar) {
         formData.append('avatar', user.avatar)
@@ -103,6 +141,7 @@ export async function updateCurrentUser(token, user) {
     await fetch(`${local_frontend_url}/api/auth/user/`, {
         method: 'PATCH',
         headers: {
+            'Authorization': `Bearer ${localStorage.getItem("token")}`,
             'Access-Control-Allow-Origin': 'http://localhost:3000',
             'X-CSRFToken': Cookies.get('csrftoken')
         },
@@ -121,7 +160,8 @@ export async function updateCurrentUser(token, user) {
 export async function getClassesList() {
     return fetch(`${local_frontend_url}/api/english/`, {
         headers: {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem("token")}`,
             'Access-Control-Allow-Origin': 'http://localhost:3000',
             'X-CSRFToken': Cookies.get('csrftoken'),
             'Client-Location': timezone
@@ -135,6 +175,7 @@ export async function getStudentClassesList() {
     return fetch(`${local_frontend_url}/api/english/student/classes/`, {
         headers: {
             "Content-Type": "application/json",
+            'Authorization': `Bearer ${localStorage.getItem("token")}`,
             'Access-Control-Allow-Origin': 'http://localhost:3000',
             'X-CSRFToken': Cookies.get('csrftoken'),
             'Client-Location': timezone
@@ -148,6 +189,7 @@ export async function getTeacherClassesList() {
     return fetch(`${local_frontend_url}/api/english/teacher/classes/`, {
         headers: {
             "Content-Type": "application/json",
+            'Authorization': `Bearer ${localStorage.getItem("token")}`,
             'Access-Control-Allow-Origin': 'http://localhost:3000',
             'X-CSRFToken': Cookies.get('csrftoken'),
             'Client-Location': timezone
@@ -161,6 +203,7 @@ export async function getStudentLessonsList() {
     return fetch(`${local_frontend_url}/api/english/student/lessons/`, {
         headers: {
             "Content-Type": "application/json",
+            'Authorization': `Bearer ${localStorage.getItem("token")}`,
             'Access-Control-Allow-Origin': 'http://localhost:3000',
             'X-CSRFToken': Cookies.get('csrftoken'),
             'Client-Location': timezone
@@ -174,6 +217,7 @@ export async function getTeacherLessonsList() {
     return fetch(`${local_frontend_url}/api/english/teacher/lessons/`, {
         headers: {
             "Content-Type": "application/json",
+            'Authorization': `Bearer ${localStorage.getItem("token")}`,
             'Access-Control-Allow-Origin': 'http://localhost:3000',
             'X-CSRFToken': Cookies.get('csrftoken'),
             'Client-Location': timezone
@@ -187,6 +231,7 @@ export async function getLessonByID(id) {
     return fetch(`${local_frontend_url}/api/english/teacher/lessons/${id}`, {
         headers: {
             'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem("token")}`,
             'Access-Control-Allow-Origin': 'http://localhost:3000',
             'X-CSRFToken': Cookies.get('csrftoken'),
             'Client-Location': timezone
@@ -202,6 +247,7 @@ export async function cancelLessonByID(id) {
         method: 'PATCH',
         headers: {
             'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem("token")}`,
             'Access-Control-Allow-Origin': 'http://localhost:3000',
             'X-CSRFToken': Cookies.get('csrftoken'),
         },
@@ -220,6 +266,7 @@ export async function getClassByID(id) {
     return fetch(`${local_frontend_url}/api/english/teacher/classes/${id}`, {
         headers: {
             'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem("token")}`,
             'Access-Control-Allow-Origin': 'http://localhost:3000',
             'X-CSRFToken': Cookies.get('csrftoken'),
             'Client-Location': timezone

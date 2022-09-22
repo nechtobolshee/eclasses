@@ -19,7 +19,7 @@ const UpdateProfilePage = () => {
             last_name && {last_name: last_name},
             avatar && {avatar: avatar}
         );
-        await updateCurrentUser(token, userData)
+        await updateCurrentUser(userData)
     };
 
     return (

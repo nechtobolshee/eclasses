@@ -1,6 +1,8 @@
 import React, {useState, useEffect} from "react";
 import Header from "../components/Header";
 import {login} from "../requests/requests"
+import GoogleSocialAuth from "../components/GoogleSocialAuth";
+
 
 const LoginPage = () => {
     const [username, setUsername] = useState("");
@@ -53,10 +55,14 @@ const LoginPage = () => {
                                                            placeholder="Password"/>
                                                 </div>
 
-                                                <div className="d-flex justify-content-center">
+                                                <div className="d-flex justify-content-center mb-4">
                                                     <button type="submit"
                                                             className="btn btn-dark btn-lg btn-block">Login
                                                     </button>
+                                                </div>
+
+                                                <div className="d-flex justify-content-center">
+                                                    <GoogleSocialAuth/>
                                                 </div>
 
                                                 <p className="text-center text-muted mt-4 mb-0">
