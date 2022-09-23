@@ -2,6 +2,7 @@ import React, {useState} from "react";
 import Header from "../components/Header";
 import {updateCurrentUser} from "../requests/requests";
 
+
 const UpdateProfilePage = () => {
     const [first_name, setFirstName] = useState(null);
     const [last_name, setLastName] = useState(null);
@@ -19,7 +20,7 @@ const UpdateProfilePage = () => {
             last_name && {last_name: last_name},
             avatar && {avatar: avatar}
         );
-        await updateCurrentUser(token, userData)
+        await updateCurrentUser(userData)
     };
 
     return (

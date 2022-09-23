@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from "react";
 import Header from "../components/Header";
 import default_avatar from "../images/default_avatar.jpg";
-import {getCurrentUser, logout, local_frontend_url} from "../requests/requests";
+import {local_frontend_url, getCurrentUser, google_logout} from "../requests/requests";
 
 
 const ProfilePage = () => {
@@ -31,7 +31,7 @@ const ProfilePage = () => {
     }, []);
 
     async function toLogout() {
-        await logout(localStorage.getItem("token"))
+        await google_logout()
         window.location.replace(`${local_frontend_url}/login`)
     }
 
@@ -44,7 +44,7 @@ const ProfilePage = () => {
                 <div className="container">
                     <div className="center-horizontal margin-content">
                         {avatar &&
-                            <img src={avatar} alt="Profile photo"
+                            <img src={avatar} alt="Profile"
                                  className="avatar-size"></img>
                         }
                         {!avatar &&

@@ -1,28 +1,32 @@
-import React, {useState, useEffect} from "react";
+import React, {useEffect} from "react";
 import Header from "../components/Header";
-import {login} from "../requests/requests"
+import {GoogleLogin} from 'react-google-login';
+import {gapi} from 'gapi-script';
+import {google_login} from "../requests/requests";
+
 
 const LoginPage = () => {
-    const [username, setUsername] = useState("");
-    const [password, setPassword] = useState("");
-    const [loading, setLoading] = useState(true);
+    const clientId = require('../client_credentials.json').client_id;
+
+    const onSuccess = async (res) => {
+        await google_login(res.accessToken)
+    };
+    const onFailure = (error) => {
+        console.log('Login failed.', error);
+    };
 
     useEffect(() => {
         if (localStorage.getItem("token") !== null) {
             window.location.replace("http://localhost:3000/profile");
-        } else {
-            setLoading(false);
         }
-    }, []);
-
-    const onSubmit = async e => {
-        e.preventDefault();
-        const userData = {
-            username: username,
-            password: password
+        const initClient = () => {
+            gapi.auth2.init({
+                clientId: clientId,
+                scope: ''
+            });
         };
-        await login(userData)
-    };
+        gapi.load('client:auth2', initClient);
+    });
 
     return (
         <div>
@@ -30,43 +34,20 @@ const LoginPage = () => {
                 <Header/>
             </header>
             <section className="vh-100">
-                <div className="mask d-flex align-items-center h-100 gradient-custom-3">
-                    <div className="container h-100">
-                        <div className="row d-flex justify-content-center align-items-center h-100">
-                            <div className="col-12 col-md-9 col-lg-7 col-xl-6">
-                                <div className="main-raised">
-                                    <div className="card-body p-5">
-                                        <h2 className="text-uppercase text-center mb-5">Sign into your account</h2>
-                                        {loading === false && (
-                                            <form onSubmit={onSubmit}>
-                                                <div className="form-outline mb-4">
-                                                    <input name="username" type="username" required
-                                                           onChange={e => setUsername(e.target.value)}
-                                                           className="form-control form-control-lg"
-                                                           placeholder="Username"/>
-                                                </div>
-
-                                                <div className="form-outline mb-4">
-                                                    <input name="password" type="password" required
-                                                           onChange={e => setPassword(e.target.value)}
-                                                           className="form-control form-control-lg"
-                                                           placeholder="Password"/>
-                                                </div>
-
-                                                <div className="d-flex justify-content-center">
-                                                    <button type="submit"
-                                                            className="btn btn-dark btn-lg btn-block">Login
-                                                    </button>
-                                                </div>
-
-                                                <p className="text-center text-muted mt-4 mb-0">
-                                                    Don't have an account? <a href="/register/"
-                                                                              className="fw-bold text-body"><u> Register
-                                                    here</u></a>
-                                                </p>
-                                            </form>
-                                        )}
-                                    </div>
+                <div className="container h-100">
+                    <div className="row justify-content-center align-items-center h-100">
+                        <div className="main-raised">
+                            <div className="card-body p-5">
+                                <h2 className="text-uppercase text-center mb-4">Sign into your account</h2>
+                                <div className="d-flex justify-content-center">
+                                    <GoogleLogin
+                                        clientId={clientId}
+                                        buttonText="Sign in with Google"
+                                        onSuccess={onSuccess}
+                                        onFailure={onFailure}
+                                        cookiePolicy={'single_host_origin'}
+                                        loginHint
+                                    />
                                 </div>
                             </div>
                         </div>

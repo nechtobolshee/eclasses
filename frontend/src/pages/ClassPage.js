@@ -2,6 +2,7 @@ import React, {useEffect, useState} from "react";
 import Header from "../components/Header";
 import {getCurrentUser, getClassByID, local_frontend_url} from "../requests/requests";
 
+
 const ClassPage = () => {
     const [class_name, setClassname] = useState("");
     const [students] = useState([]);
