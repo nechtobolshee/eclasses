@@ -31,7 +31,7 @@ const LessonPage = () => {
             setClassname(data.class_name);
             setStatus(data.status);
             setStartTime(data.start_time);
-            setEndTime(data.end_time);
+                setEndTime(data.end_time);
         }
         fetchData().catch(console.error)
     });
@@ -70,8 +70,9 @@ const LessonPage = () => {
                         </tr>
                         </tbody>
                     </table>
-                    <div className="d-flex justify-content-center">
+                    <div className="">
                         <button className="btn btn-dark btn-lg btn-block" onClick={cancelLesson}>Cancel</button>
+                        <a href="/english/lessons/" className="btn btn-outline-dark btn-lg btn-block">Back</a>
                     </div>
                 </div>
             </div>

@@ -1,6 +1,11 @@
 import React, {useEffect, useState} from "react";
 import Header from "../components/Header";
-import {getClassesList, getCurrentUser, getStudentClassesList, getTeacherClassesList} from "../requests/requests";
+import {
+    getClassesList,
+    getCurrentUser,
+    getStudentClassesList,
+    getTeacherClassesList
+} from "../requests/requests";
 
 
 const ClassesListPage = () => {

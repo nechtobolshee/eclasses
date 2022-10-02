@@ -81,6 +81,9 @@ const ClassPage = () => {
                         </tr>
                         </tbody>
                     </table>
+                    <div>
+                        <a href="/english/" className="btn btn-outline-dark btn-lg btn-block">Back</a>
+                    </div>
                 </div>
             </div>
         </div>
