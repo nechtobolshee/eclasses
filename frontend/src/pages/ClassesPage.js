@@ -48,7 +48,6 @@ const ClassesListPage = () => {
     }
 
     const joinClassFunc = (id) => async () => {
-        console.log('1', user)
         await joinClass(id)
 
     }
