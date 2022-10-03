@@ -217,3 +217,37 @@ export async function getClassByID(id) {
     })
         .then(res => res.json())
 }
+
+export async function leaveClass(id) {
+    return fetch(`${local_frontend_url}/api/english/student/classes/${id}/join`, {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem("token")}`,
+            'Access-Control-Allow-Origin': 'http://localhost:3000',
+            'X-CSRFToken': Cookies.get('csrftoken'),
+            'Client-Location': timezone
+        },
+        credentials: 'include'
+    })
+        .then(res => {
+            window.location.reload();
+        });
+}
+
+export async function joinClass(id) {
+    return fetch(`${local_frontend_url}/api/english/student/classes/${id}/join/`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem("token")}`,
+            'Access-Control-Allow-Origin': 'http://localhost:3000',
+            'X-CSRFToken': Cookies.get('csrftoken'),
+            'Client-Location': timezone
+        },
+        credentials: 'include'
+    })
+        .then(res => {
+            window.location.reload();
+        });
+}

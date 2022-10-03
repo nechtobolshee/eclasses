@@ -83,8 +83,8 @@ const ProfilePage = () => {
                         </tbody>
                     </table>
                     <div>
-                        <a href="profile/edit/" className="btn btn-dark btn-lg btn-block">Edit</a>
-                        <button className="btn btn-dark btn-lg btn-block" onClick={toLogout}>Logout</button>
+                        <a href="/profile/edit/" className="btn btn-dark btn-lg btn-block">Edit</a>
+                        <button className="btn btn-outline-dark btn-lg btn-block" onClick={toLogout}>Logout</button>
                     </div>
                 </div>
             </div>

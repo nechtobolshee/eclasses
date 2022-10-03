@@ -21,7 +21,7 @@ class User(AbstractUser):
     _role = models.CharField(max_length=10, null=False, choices=user_roles, default=EMPLOYEE)
 
     def __str__(self):
-        return self.get_full_name()
+        return self.get_full_name() if (self.first_name and self.last_name) else self.username
 
     @property
     def role(self):

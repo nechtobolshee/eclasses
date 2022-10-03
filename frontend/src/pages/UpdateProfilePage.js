@@ -29,44 +29,36 @@ const UpdateProfilePage = () => {
                 <Header/>
             </header>
 
-            <section className="vh-100">
-                <div className="mask d-flex align-items-center h-100 gradient-custom-3">
-                    <div className="container h-100">
-                        <div className="row d-flex justify-content-center align-items-center h-100">
-                            <div className="col-12 col-md-9 col-lg-7 col-xl-6">
-                                <div className="main-raised">
-                                    <div className="card-body p-5">
-                                        <h2 className="text-uppercase text-center mb-5">Edit profile</h2>
-                                        <form onSubmit={onSubmit}>
-                                            <div className="form-outline mb-4">
-                                                <input type="text" className="form-control form-control-lg"
-                                                       placeholder="Name" onChange={e => setFirstName(e.target.value)}/>
-                                            </div>
+            <div className="center-horizontal">
+                <div className="main main-raised default-small-block">
+                    <div className="container">
+                        <h2 className="text-uppercase text-center mb-5">Edit profile</h2>
+                        <form onSubmit={onSubmit}>
+                            <div>
+                                <div className="form-outline mb-4">
+                                    <input type="text" className="form-control form-control-lg"
+                                           placeholder="Name" onChange={e => setFirstName(e.target.value)}/>
+                                </div>
 
-                                            <div className="form-outline mb-4">
-                                                <input type="text" className="form-control form-control-lg"
-                                                       placeholder="Surname"
-                                                       onChange={e => setLastName(e.target.value)}/>
-                                            </div>
-
-                                            <div className="form-outline mb-4">
-                                                <label className="form-label">Select new avatar</label>
-                                                <input type="file" accept="image/png, image/jpeg" className="mb-4"
-                                                       onChange={e => setAvatar(e.target.files[0])}/>
-                                            </div>
-
-                                            <div className="d-flex justify-content-center">
-                                                <button type="submit" className="btn btn-dark btn-lg btn-block">Update
-                                                </button>
-                                            </div>
-                                        </form>
-                                    </div>
+                                <div className="form-outline mb-4">
+                                    <input type="text" className="form-control form-control-lg"
+                                           placeholder="Surname"
+                                           onChange={e => setLastName(e.target.value)}/>
                                 </div>
                             </div>
-                        </div>
+                            <label className="form-label">Select new avatar</label>
+                            <div className="form-outline mb-4">
+                                <input type="file" accept="image/png, image/jpeg" className="mb-4"
+                                       onChange={e => setAvatar(e.target.files[0])}/>
+                            </div>
+                            <div>
+                                <button type="submit" className="btn btn-dark btn-lg btn-block">Update</button>
+                                <a href="/profile/" className="btn btn-outline-dark btn-lg btn-block">Cancel</a>
+                            </div>
+                        </form>
                     </div>
                 </div>
-            </section>
+            </div>
         </div>
     )
 };
