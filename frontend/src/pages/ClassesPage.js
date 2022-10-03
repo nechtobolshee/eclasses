@@ -4,7 +4,9 @@ import {
     getClassesList,
     getCurrentUser,
     getStudentClassesList,
-    getTeacherClassesList
+    getTeacherClassesList,
+    leaveClass,
+    joinClass
 } from "../requests/requests";
 
 
@@ -12,6 +14,8 @@ const ClassesListPage = () => {
     const [user, setUser] = useState(null)
     const [classesList, setClassesList] = useState([]);
     const [userClassesList, setUserClassesList] = useState([]);
+    const [joinButton, setJoinButton] = useState(false)
+
 
     useEffect(() => {
         const token = localStorage.getItem("token")
@@ -26,6 +30,7 @@ const ClassesListPage = () => {
                     setUserClassesList(await getTeacherClassesList());
                 } else {
                     setUserClassesList(await getStudentClassesList());
+                    setJoinButton(true)
                 }
             }
             fetchData().catch(console.error)
@@ -36,6 +41,16 @@ const ClassesListPage = () => {
         if (user?.role === "Teacher") {
             window.location.replace(`http://localhost:3000/english/classes/${id}`)
         }
+    }
+
+    const leaveClassFunc = (id) => async () => {
+        await leaveClass(id)
+    }
+
+    const joinClassFunc = (id) => async () => {
+        console.log('1', user)
+        await joinClass(id)
+
     }
 
     return (
@@ -56,6 +71,9 @@ const ClassesListPage = () => {
                             <th>Days</th>
                             <th>Time start</th>
                             <th>Time end</th>
+                            {joinButton === true &&
+                                <th></th>
+                            }
                         </tr>
                         </thead>
                         <tbody id="tableData">
@@ -67,6 +85,9 @@ const ClassesListPage = () => {
                                     <td>{item.days.join(", ")}</td>
                                     <td>{item.start_time}</td>
                                     <td>{item.end_time}</td>
+                                    {joinButton === true &&
+                                        <td><a href="/english/" className="pretty-link" onClick={leaveClassFunc(item.pk)}>Leave</a></td>
+                                    }
                                 </tr>
                             ))
                         }
@@ -88,6 +109,9 @@ const ClassesListPage = () => {
                             <th>Days</th>
                             <th>Time start</th>
                             <th>Time end</th>
+                            {joinButton === true &&
+                                <th></th>
+                            }
                         </tr>
                         </thead>
                         <tbody id="tableData">
@@ -99,6 +123,9 @@ const ClassesListPage = () => {
                                     <td>{item.days.join(", ")}</td>
                                     <td>{item.start_time}</td>
                                     <td>{item.end_time}</td>
+                                    {joinButton === true &&
+                                        <td><a href="/english/" className="pretty-link" onClick={joinClassFunc(item.pk)}>Join</a></td>
+                                    }
                                 </tr>
                             ))
                         }

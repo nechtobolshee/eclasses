@@ -84,3 +84,7 @@ body {
   border-color: #0f0f0f;
   border-radius: 5px;
 }
+
+.pretty-link {
+  color: black;
+}
