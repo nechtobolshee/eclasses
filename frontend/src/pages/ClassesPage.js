@@ -49,7 +49,6 @@ const ClassesListPage = () => {
 
     const joinClassFunc = (id) => async () => {
         await joinClass(id)
-
     }
 
     return (
