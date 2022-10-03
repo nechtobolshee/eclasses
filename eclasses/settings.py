@@ -1,6 +1,7 @@
 import os
 import environ
 from pathlib import Path
+from datetime import timedelta
 import logging
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -60,6 +61,12 @@ ALLOWED_EMAIL_DOMAINS = [
 ]
 
 REST_USE_JWT = True
+
+# Authorization token settings (simple jwt)
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+}
 
 SITE_ID = 1
 
