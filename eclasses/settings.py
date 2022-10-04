@@ -29,14 +29,13 @@ INSTALLED_APPS = [
     'django.contrib.sites',
     'django_filters',
     'django_crontab',
-    'rest_auth',
-    'rest_auth.registration',
     'rest_framework',
     'rest_framework.authtoken',
     'rest_framework_swagger',
     "rest_framework_simplejwt",
     'allauth',
     'allauth.account',
+    'allauth.socialaccount',
     'users',
     'english'
 ]
@@ -45,9 +44,9 @@ REST_FRAMEWORK = {
     'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema',
     'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
         'rest_framework.authentication.SessionAuthentication',
-        'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
+        'rest_framework.authentication.BasicAuthentication',
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
 }
 
@@ -93,7 +92,7 @@ ROOT_URLCONF = 'eclasses.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': ['templates'],
+        'DIRS': [BASE_DIR / "templates"],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -191,3 +190,8 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Basic authorization (for swagger)
+LOGIN_REDIRECT_URL = "/docs"
+LOGIN_URL = 'login'
+LOGOUT_URL = 'logout'
