@@ -8,19 +8,26 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.utils import json
 from rest_framework.views import APIView
+from rest_framework.generics import RetrieveUpdateAPIView, get_object_or_404
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.authentication import JWTAuthentication
 from users.models import User
 
 from .serializers import UserDetailsSerializer
 
 
-class GetCurrentUser(APIView):
-    authentication_classes = (TokenAuthentication, SessionAuthentication)
+class GetCurrentUserRetrieveUpdateAPIView(RetrieveUpdateAPIView):
+    http_method_names = ['get', 'patch']
+    authentication_classes = (TokenAuthentication, SessionAuthentication, JWTAuthentication,)
     permission_classes = (IsAuthenticated,)
+    queryset = User.objects.all()
+    serializer_class = UserDetailsSerializer
 
-    def get(self, request):
-        serializer = UserDetailsSerializer(request.user)
-        return Response(serializer.data)
+    def get_object(self):
+        queryset = self.filter_queryset(self.get_queryset())
+        obj = get_object_or_404(queryset, pk=self.request.user.pk)
+        self.check_object_permissions(self.request, obj)
+        return obj
 
 
 class GoogleAuthorizationAPIView(APIView):
