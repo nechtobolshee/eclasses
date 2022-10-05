@@ -18,15 +18,10 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.urls import path, include
 from rest_framework_swagger.views import get_swagger_view
-from users.views import GoogleAuthorizationAPIView, GoogleLogoutAPIView, GetCurrentUser
-
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/auth/', include('django.contrib.auth.urls')),
-    path('api/auth/user/', GetCurrentUser.as_view(), name='current_user'),
-    path('api/auth/google/', GoogleAuthorizationAPIView.as_view(), name='google_login'),
-    path('api/auth/google/logout/', GoogleLogoutAPIView.as_view(), name='google_logout'),
+    path('api/auth/', include('users.urls')),
     path('api/english/', include('english.urls')),
     path('docs/', get_swagger_view(title='EClasses Rest API Document')),
 ]

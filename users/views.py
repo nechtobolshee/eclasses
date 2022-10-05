@@ -16,7 +16,7 @@ from users.models import User
 from .serializers import UserDetailsSerializer
 
 
-class GetCurrentUser(RetrieveUpdateAPIView):
+class GetCurrentUserRetrieveUpdateAPIView(RetrieveUpdateAPIView):
     http_method_names = ['get', 'patch']
     authentication_classes = (TokenAuthentication, SessionAuthentication, JWTAuthentication,)
     permission_classes = (IsAuthenticated,)

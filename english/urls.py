@@ -10,7 +10,6 @@ from .views import (
     JoinToClassUpdateDestroyAPIView,
 )
 
-
 urlpatterns = [
     path("", ClassListAPIView.as_view(), name="classes-list"),
 
