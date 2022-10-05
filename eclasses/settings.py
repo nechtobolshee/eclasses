@@ -191,7 +191,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Basic authorization (for swagger)
+# Basic authorization parameters
 LOGIN_REDIRECT_URL = "/docs"
 LOGIN_URL = 'login'
 LOGOUT_URL = 'logout'
